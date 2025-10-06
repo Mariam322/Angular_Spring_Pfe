@@ -89,6 +89,8 @@ pipeline {
                     sh 'npm install'
                     sh 'npm install @popperjs/core --save'
                     sh 'npm run build -- --configuration=production'
+                    --budgets=all:20mb \
+                    --source-map=false
                     
                 }
             }
