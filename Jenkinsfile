@@ -84,7 +84,7 @@ pipeline {
        // ---------- Frontend Build ----------
         stage('Build Angular Frontend') {
             steps {
-                dir('Front/WebFront') {
+                dir('BankprojetFront') {
                     sh 'npm config set legacy-peer-deps true'
                     sh 'npm install'
                     sh 'npm run build -- --configuration=production'
@@ -153,7 +153,7 @@ pipeline {
 
         stage('Build Angular Frontend Image') {
             steps { 
-                dir('Front/WebFront') { 
+                dir('BankprojetFront') { 
                     sh "docker build -t ${DOCKER_REGISTRY}/angular-frontend ." 
                 } 
             }
