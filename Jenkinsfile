@@ -9,7 +9,7 @@ pipeline {
     environment {
         DOCKER_REGISTRY = 'mariammseddi12'
         JAVA_HOME = '/opt/java/openjdk' 
-        K8S_NAMESPACE = 'microservice'
+        K8S_NAMESPACE = 'default'
         JENKINS_NOOP = "true"
         JENKINS_OPTS = "-Dorg.jenkinsci.plugins.durabletask.BourneShellScript.HEARTBEAT_CHECK_INTERVAL=300"
     }
