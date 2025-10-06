@@ -1,0 +1,117 @@
+package tn.iit.response;
+
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import tn.iit.entites.Compain;
+
+public class CompainResponse {
+
+    private Long id;
+    private String reference;
+    private String name;
+    private String country;
+    private String town;
+    private String adress;
+    private String pc;
+    private Date createdAt;
+    private Date updatedAt;
+
+    // Constructeur à partir de l'entité Compain
+    public CompainResponse(Compain compain) {
+        this.id = compain.getId();
+        this.reference = compain.getReference();
+        this.name = compain.getName();
+        this.country = compain.getCountry();
+        this.town = compain.getTown();
+        this.adress = compain.getAdress();
+        this.pc = compain.getPc();
+        this.createdAt = compain.getCreatedAt();
+        this.updatedAt = compain.getUpdatedAt();
+    }
+
+    // Getters et setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getReference() {
+        return reference;
+    }
+
+    public void setReference(String reference) {
+        this.reference = reference;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getTown() {
+        return town;
+    }
+
+    public void setTown(String town) {
+        this.town = town;
+    }
+
+    public String getAdress() {
+        return adress;
+    }
+
+    public void setAdress(String adress) {
+        this.adress = adress;
+    }
+
+    public String getPc() {
+        return pc;
+    }
+
+    public void setPc(String pc) {
+        this.pc = pc;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    // Méthode utilitaire pour convertir une liste de Compain en liste de CompainResponse
+    public static List<CompainResponse> toArrayList(List<Compain> compains) {
+        List<CompainResponse> responseList = new ArrayList<>();
+        for (Compain c : compains) {
+            responseList.add(new CompainResponse(c));
+        }
+        return responseList;
+    }
+}
+
