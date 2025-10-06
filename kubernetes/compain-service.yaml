@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: compain-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: compain-service
+  template:
+    metadata:
+      labels:
+        app: compain-service
+    spec:
+      containers:
+      - name: compain-service
+        image: mariammseddi12/compain-service:latest
+        ports:
+        - containerPort: 8082
+        env:
+        - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+          value: "http://eureka-service:8761/eureka/"
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: compain-service
+spec:
+  selector:
+    app: compain-service
+  ports:
+  - port: 8082
+    targetPort: 8082
