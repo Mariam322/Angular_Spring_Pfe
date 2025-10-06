@@ -79,19 +79,16 @@ pipeline {
             }
         }
 
-
-
-       // ---------- Frontend Build ----------
+        // ---------- Frontend Build ----------
         stage('Build Angular Frontend') {
             steps {
                 dir('BankprojetFront') {
-                    sh 'npm config set legacy-peer-deps true'
-                    sh 'npm install'
-                    sh 'npm install @popperjs/core --save'
-                    sh 'npm run build -- --configuration=production'
-                    --budgets=all:20mb \
-                    --source-map=false
-                    
+                    sh '''
+                        npm config set legacy-peer-deps true
+                        npm install
+                        npm install @popperjs/core --save
+                        npx ng build --configuration=production --source-map=false
+                    '''
                 }
             }
         }
@@ -152,8 +149,6 @@ pipeline {
                 } 
             }
         }
-
-
 
         stage('Build Angular Frontend Image') {
             steps { 
