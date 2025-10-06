@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: facturation-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: facturation-service
+  template:
+    metadata:
+      labels:
+        app: facturation-service
+    spec:
+      containers:
+      - name: facturation-service
+        image: mariammseddi12/facturation-service:latest
+        ports:
+        - containerPort: 8024
+        env:
+        - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+          value: "http://eureka-service:8761/eureka/"
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: facturation-service
+spec:
+  selector:
+    app: facturation-service
+  ports:
+  - port: 8024
+    targetPort: 8024
