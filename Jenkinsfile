@@ -20,68 +20,63 @@ pipeline {
             }
         }
 
+        // ✅ AJOUTEZ CETTE ÉTAPE ICI ✅
+        stage('Fix Maven Compiler Version') {
+            steps {
+                sh '''
+                    # Changer 3.8.1 -> 3.13.0 dans tous les pom.xml
+                    find . -name "pom.xml" -exec sed -i 's/3.8.1/3.13.0/g' {} \\;
+                    echo "✅ Maven Compiler Plugin updated to 3.13.0"
+                '''
+            }
+        }
+
         // ---------- Backend Build ----------
         stage('Build Eureka') {
             steps {
-                withMaven(maven: 'maven-3.8.6') {
-                    dir('EurekaCompain') { sh 'mvn clean package -DskipTests' }
-                }
+                dir('EurekaCompain') { sh 'mvn clean package -DskipTests' }
             }
         }
 
         stage('Build Gateway') {
             steps {
-                withMaven(maven: 'maven-3.8.6') {
-                    dir('Gatway') { sh 'mvn clean package -DskipTests' }
-                }
+                dir('Gatway') { sh 'mvn clean package -DskipTests' }
             }
         }
 
         stage('Build Compain Service') {
             steps {
-                withMaven(maven: 'maven-3.8.6') {
-                    dir('ProjetCompain') { sh 'mvn clean package -DskipTests' }
-                }
+                dir('ProjetCompain') { sh 'mvn clean package -DskipTests' }
             }
         }
 
         stage('Build Facturation Service') {
             steps {
-                withMaven(maven: 'maven-3.8.6') {
-                    dir('Facturation') { sh 'mvn clean package -DskipTests' }
-                }
+                dir('Facturation') { sh 'mvn clean package -DskipTests' }
             }
         }
 
         stage('Build Depense Service') {
             steps {
-                withMaven(maven: 'maven-3.8.6') {
-                    dir('Depense') { sh 'mvn clean package -DskipTests' }
-                }
+                dir('Depense') { sh 'mvn clean package -DskipTests' }
             }
         }
 
         stage('Build Bank Service') {
             steps {
-                withMaven(maven: 'maven-3.8.6') {
-                    dir('BanqueService') { sh 'mvn clean package -DskipTests' }
-                }
+                dir('BanqueService') { sh 'mvn clean package -DskipTests' }
             }
         }
 
         stage('Build ReglementAffectation Service') {
             steps {
-                withMaven(maven: 'maven-3.8.6') {
-                    dir('ReglementAffectation') { sh 'mvn clean package -DskipTests' }
-                }
+                dir('ReglementAffectation') { sh 'mvn clean package -DskipTests' }
             }
         }
 
         stage('Build Documents Service') {
             steps {
-                withMaven(maven: 'maven-3.8.6') {
-                    dir('Documents') { sh 'mvn clean package -DskipTests' }
-                }
+                dir('Documents') { sh 'mvn clean package -DskipTests' }
             }
         }
 
