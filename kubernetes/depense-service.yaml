@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: depense-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: depense-service
+  template:
+    metadata:
+      labels:
+        app: depense-service
+    spec:
+      containers:
+      - name: depense-service
+        image: mariammseddi12/depense-service:latest
+        ports:
+        - containerPort: 8022
+        env:
+        - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+          value: "http://eureka-service:8761/eureka/"
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: depense-service
+spec:
+  selector:
+    app: depense-service
+  ports:
+  - port: 8022
+    targetPort: 8022
