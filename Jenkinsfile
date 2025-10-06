@@ -11,6 +11,7 @@ pipeline {
         K8S_NAMESPACE = 'default'
         JENKINS_NOOP = "true"
         JENKINS_OPTS = "-Dorg.jenkinsci.plugins.durabletask.BourneShellScript.HEARTBEAT_CHECK_INTERVAL=300"
+        MAVEN_COMPILER_VERSION = '-Dmaven.compiler.plugin.version=3.11.0'
     }
 
     stages {
@@ -20,63 +21,68 @@ pipeline {
             }
         }
 
-        // ✅ AJOUTEZ CETTE ÉTAPE ICI ✅
-        stage('Fix Maven Compiler Version') {
-            steps {
-                sh '''
-                    # Changer 3.8.1 -> 3.13.0 dans tous les pom.xml
-                    find . -name "pom.xml" -exec sed -i 's/3.8.1/3.13.0/g' {} \\;
-                    echo "✅ Maven Compiler Plugin updated to 3.13.0"
-                '''
-            }
-        }
-
         // ---------- Backend Build ----------
         stage('Build Eureka') {
             steps {
-                dir('EurekaCompain') { sh 'mvn clean package -DskipTests' }
+                dir('EurekaCompain') { 
+                    sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
+                }
             }
         }
 
         stage('Build Gateway') {
             steps {
-                dir('Gatway') { sh 'mvn clean package -DskipTests' }
+                dir('Gatway') { 
+                    sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
+                }
             }
         }
 
         stage('Build Compain Service') {
             steps {
-                dir('ProjetCompain') { sh 'mvn clean package -DskipTests' }
+                dir('ProjetCompain') { 
+                    sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
+                }
             }
         }
 
         stage('Build Facturation Service') {
             steps {
-                dir('Facturation') { sh 'mvn clean package -DskipTests' }
+                dir('Facturation') { 
+                    sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
+                }
             }
         }
 
         stage('Build Depense Service') {
             steps {
-                dir('Depense') { sh 'mvn clean package -DskipTests' }
+                dir('Depense') { 
+                    sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
+                }
             }
         }
 
         stage('Build Bank Service') {
             steps {
-                dir('BanqueService') { sh 'mvn clean package -DskipTests' }
+                dir('BanqueService') { 
+                    sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
+                }
             }
         }
 
         stage('Build ReglementAffectation Service') {
             steps {
-                dir('ReglementAffectation') { sh 'mvn clean package -DskipTests' }
+                dir('ReglementAffectation') { 
+                    sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
+                }
             }
         }
 
         stage('Build Documents Service') {
             steps {
-                dir('Documents') { sh 'mvn clean package -DskipTests' }
+                dir('Documents') { 
+                    sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
+                }
             }
         }
 
@@ -93,39 +99,75 @@ pipeline {
 
         // ---------- Docker Images ----------
         stage('Build Eureka Image') {
-            steps { dir('EurekaCompain') { sh "docker build -t ${DOCKER_REGISTRY}/eureka-server ." } }
+            steps { 
+                dir('EurekaCompain') { 
+                    sh "docker build -t ${DOCKER_REGISTRY}/eureka-server ." 
+                } 
+            }
         }
 
         stage('Build Gateway Image') {
-            steps { dir('Gatway') { sh "docker build -t ${DOCKER_REGISTRY}/gateway-service ." } }
+            steps { 
+                dir('Gatway') { 
+                    sh "docker build -t ${DOCKER_REGISTRY}/gateway-service ." 
+                } 
+            }
         }
 
         stage('Build Compain Image') {
-            steps { dir('ProjetCompain') { sh "docker build -t ${DOCKER_REGISTRY}/compain-service ." } }
+            steps { 
+                dir('ProjetCompain') { 
+                    sh "docker build -t ${DOCKER_REGISTRY}/compain-service ." 
+                } 
+            }
         }
 
         stage('Build Facturation Image') {
-            steps { dir('Facturation') { sh "docker build -t ${DOCKER_REGISTRY}/facturation-service ." } }
+            steps { 
+                dir('Facturation') { 
+                    sh "docker build -t ${DOCKER_REGISTRY}/facturation-service ." 
+                } 
+            }
         }
 
         stage('Build Depense Image') {
-            steps { dir('Depense') { sh "docker build -t ${DOCKER_REGISTRY}/depense-service ." } }
+            steps { 
+                dir('Depense') { 
+                    sh "docker build -t ${DOCKER_REGISTRY}/depense-service ." 
+                } 
+            }
         }
 
         stage('Build Bank Image') {
-            steps { dir('BanqueService') { sh "docker build -t ${DOCKER_REGISTRY}/bank-service ." } }
+            steps { 
+                dir('BanqueService') { 
+                    sh "docker build -t ${DOCKER_REGISTRY}/bank-service ." 
+                } 
+            }
         }
 
         stage('Build ReglementAffectation Image') {
-            steps { dir('ReglementAffectation') { sh "docker build -t ${DOCKER_REGISTRY}/reglementaffectation-service ." } }
+            steps { 
+                dir('ReglementAffectation') { 
+                    sh "docker build -t ${DOCKER_REGISTRY}/reglementaffectation-service ." 
+                } 
+            }
         }
 
         stage('Build Documents Image') {
-            steps { dir('Documents') { sh "docker build -t ${DOCKER_REGISTRY}/document-service ." } }
+            steps { 
+                dir('Documents') { 
+                    sh "docker build -t ${DOCKER_REGISTRY}/document-service ." 
+                } 
+            }
         }
 
         stage('Build Angular Frontend Image') {
-            steps { dir('Front/WebFront') { sh "docker build -t ${DOCKER_REGISTRY}/angular-frontend ." } }
+            steps { 
+                dir('Front/WebFront') { 
+                    sh "docker build -t ${DOCKER_REGISTRY}/angular-frontend ." 
+                } 
+            }
         }
 
         // ---------- Push Docker Images ----------
@@ -181,7 +223,11 @@ pipeline {
     }
 
     post {
-        success { echo '✅ Pipeline complet (backend + frontend) terminé avec succès !' }
-        failure { echo '❌ Le pipeline a échoué, vérifier les logs Jenkins.' }
+        success { 
+            echo '✅ Pipeline complet (backend + frontend) terminé avec succès !' 
+        }
+        failure { 
+            echo '❌ Le pipeline a échoué, vérifier les logs Jenkins.' 
+        }
     }
 }
