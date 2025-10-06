@@ -1,6 +1,6 @@
 pipeline {
      agent {
-        label 'jenkins/my-jenkins-jenkins-agent'
+        label 'my-jenkins-jenkins-agent'
     }
 
     tools {
