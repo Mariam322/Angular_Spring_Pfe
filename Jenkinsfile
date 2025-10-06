@@ -4,6 +4,7 @@ pipeline {
     tools {
         jdk 'jdk-17'
         maven 'maven-3.9.10'
+        nodejs 'node-18'
     }
 
     environment {
