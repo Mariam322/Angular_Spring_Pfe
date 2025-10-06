@@ -87,7 +87,9 @@ pipeline {
                 dir('BankprojetFront') {
                     sh 'npm config set legacy-peer-deps true'
                     sh 'npm install'
+                    sh 'npm install @popperjs/core --save'
                     sh 'npm run build -- --configuration=production'
+                    
                 }
             }
         }
