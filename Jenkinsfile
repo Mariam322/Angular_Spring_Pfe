@@ -78,15 +78,9 @@ pipeline {
             }
         }
 
-        stage('Build Documents Service') {
-            steps {
-                dir('Documents') { 
-                    sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
-                }
-            }
-        }
 
-        // ---------- Frontend Build ----------
+
+       // ---------- Frontend Build ----------
         stage('Build Angular Frontend') {
             steps {
                 dir('Front/WebFront') {
@@ -154,13 +148,7 @@ pipeline {
             }
         }
 
-        stage('Build Documents Image') {
-            steps { 
-                dir('Documents') { 
-                    sh "docker build -t ${DOCKER_REGISTRY}/document-service ." 
-                } 
-            }
-        }
+
 
         stage('Build Angular Frontend Image') {
             steps { 
@@ -182,7 +170,6 @@ pipeline {
                     sh "docker push ${DOCKER_REGISTRY}/depense-service"
                     sh "docker push ${DOCKER_REGISTRY}/bank-service"
                     sh "docker push ${DOCKER_REGISTRY}/reglementaffectation-service"
-                    sh "docker push ${DOCKER_REGISTRY}/document-service"
                     sh "docker push ${DOCKER_REGISTRY}/angular-frontend"
                 }
             }
@@ -195,15 +182,14 @@ pipeline {
                     withKubeConfig([credentialsId: 'kubernetes-credentials-id']) {
                         sh """
                             kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
-                            kubectl apply -f kubernetes/01-eureka.yaml -n ${K8S_NAMESPACE}
+                            kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
                             sleep 20
                             kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
                             kubectl apply -f kubernetes/compain-service.yaml -n ${K8S_NAMESPACE}
                             kubectl apply -f kubernetes/facturation-service.yaml -n ${K8S_NAMESPACE}
                             kubectl apply -f kubernetes/depense-service.yaml -n ${K8S_NAMESPACE}
-                            kubectl apply -f kubernetes/06-bank-service.yaml -n ${K8S_NAMESPACE}
-                            kubectl apply -f kubernetes/07-reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
-                            kubectl apply -f kubernetes/08-document-service.yaml -n ${K8S_NAMESPACE}
+                            kubectl apply -f kubernetes/bank-service.yaml -n ${K8S_NAMESPACE}
+                            kubectl apply -f kubernetes/reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
                             kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
                         """
 
@@ -211,7 +197,7 @@ pipeline {
                         def services = [
                             'eureka-server', 'gateway-service', 'compain-service',
                             'facturation-service', 'depense-service', 'bank-service',
-                            'reglementaffectation-service', 'document-service', 'angular-frontend'
+                            'reglementaffectation-service', 'angular-frontend'
                         ]
                         services.each { service ->
                             sh "kubectl rollout status deployment/${service} -n ${K8S_NAMESPACE} --timeout=300s"
