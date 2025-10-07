@@ -10,6 +10,8 @@ pipeline {
     environment {
         DOCKER_REGISTRY = 'mariammseddi12'
         K8S_NAMESPACE = 'default'
+        JENKINS_NOOP = "true"
+        JENKINS_OPTS = "-Dorg.jenkinsci.plugins.durabletask.BourneShellScript.HEARTBEAT_CHECK_INTERVAL=300"
         MAVEN_COMPILER_VERSION = '-Dmaven.compiler.plugin.version=3.11.0'
     }
 
@@ -87,23 +89,27 @@ pipeline {
                         npm install
                         npm install @popperjs/core --save
                         
-                        echo Modification de angular.json pour désactiver les budgets...
-                        powershell -Command "
-                            if (Test-Path 'angular.json') {
-                                `$config = Get-Content 'angular.json' | ConvertFrom-Json
-                                `$projectName = (`$config.projects | Get-Member -MemberType NoteProperty | Select-Object -First 1).Name
+                        # Modifier angular.json pour désactiver les budgets
+                        if [ -f "angular.json" ]; then
+                            echo "Désactivation des budgets dans angular.json..."
+                            node -e "
+                                const fs = require('fs');
+                                const config = JSON.parse(fs.readFileSync('angular.json', 'utf8'));
+                                const project = Object.keys(config.projects)[0];
                                 
                                 # Supprimer complètement la section budgets
-                                if (`$config.projects.`$`$projectName.architect.build.configurations.production.PSObject.Properties.Name -contains 'budgets') {
-                                    `$config.projects.`$`$projectName.architect.build.configurations.production.PSObject.Properties.Remove('budgets')
+                                if (config.projects[project]?.architect?.build?.configurations?.production?.budgets) {
+                                    delete config.projects[project].architect.build.configurations.production.budgets;
                                 }
                                 
-                                `$config | ConvertTo-Json -Depth 10 | Set-Content 'angular.json'
-                                echo '✅ Budgets désactivés'
-                            }
-                        "
+                                fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
+                                console.log('✅ Budgets désactivés');
+                            "
+                        fi
                         
+                        # Build sans budgets
                         npx ng build --configuration=production --source-map=false
+                        
                         echo "✅ Build Angular terminé avec succès"
                     """
                 }
@@ -200,7 +206,7 @@ pipeline {
                         bat """
                             kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
                             kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
-                            timeout /t 20 /nobreak
+                            sleep 20
                             kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
                             kubectl apply -f kubernetes/compain-service.yaml -n ${K8S_NAMESPACE}
                             kubectl apply -f kubernetes/facturation-service.yaml -n ${K8S_NAMESPACE}
@@ -226,10 +232,6 @@ pipeline {
     }
 
     post {
-        always {
-            bat 'docker logout'
-            echo 'Nettoyage des credentials Docker effectué'
-        }
         success { 
             echo '✅ Pipeline complet (backend + frontend) terminé avec succès !' 
         }
