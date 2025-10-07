@@ -1,0 +1,17 @@
+# .dockerignore
+.git
+.gitignore
+README.md
+target/
+!target/*.jar
+src/
+.idea/
+*.log
+*.iml
+.classpath
+.project
+.settings/
+bin/
+build/
+node_modules/
+.DS_Store
