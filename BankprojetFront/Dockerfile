@@ -1,23 +1,21 @@
-FROM node:20
+FROM node:20-alpine
 
-# Définir le répertoire de travail
 WORKDIR /app
 
-# Installer Angular CLI globalement
-RUN npm install -g @angular/cli@18
-
-# Copier les fichiers nécessaires pour l'installation des dépendances
+# Copier les fichiers de dépendances
 COPY package.json package-lock.json ./
 COPY proxy.conf.json ./
-# Configurer NPM et installer les dépendances avec des délais étendus
-RUN npm config set registry https://registry.npmjs.org/ && \
-    npm install --legacy-peer-deps --timeout=60000
 
-# Copier le reste des fichiers
+# Installer Angular CLI et les dépendances
+RUN npm install -g @angular/cli@18 && \
+    npm config set registry https://registry.npmjs.org/ && \
+    npm ci --legacy-peer-deps
+
+# Copier le code source
 COPY . .
 
-# Exposer le port utilisé par Angular
+# Exposer le port
 EXPOSE 4200
 
-# Commande pour démarrer l'application Angular
+# Commande pour développement
 CMD ["ng", "serve", "--host", "0.0.0.0", "--disable-host-check", "--proxy-config", "proxy.conf.json"]
