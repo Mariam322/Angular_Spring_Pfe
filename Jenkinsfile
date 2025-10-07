@@ -3,8 +3,8 @@ pipeline {
     
 
     tools {
-        jdk 'jdk-17'
-        maven 'maven-3.9.10'
+        jdk 'JDK19'
+        maven 'MAVEN3.3.9windows'
         nodejs 'node-20'
     }
 
