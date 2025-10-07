@@ -1,6 +1,7 @@
 pipeline {
     agent any
     
+
     tools {
         jdk 'jdk-17'
         maven 'maven-3.9.10'
@@ -26,7 +27,7 @@ pipeline {
         stage('Build Eureka') {
             steps {
                 dir('EurekaCompain') { 
-                    bat "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
+                    sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
                 }
             }
         }
@@ -34,7 +35,7 @@ pipeline {
         stage('Build Gateway') {
             steps {
                 dir('Gatway') { 
-                    bat "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
+                    sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
                 }
             }
         }
@@ -42,7 +43,7 @@ pipeline {
         stage('Build Compain Service') {
             steps {
                 dir('ProjetCompain') { 
-                    bat "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
+                    sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
                 }
             }
         }
@@ -50,7 +51,7 @@ pipeline {
         stage('Build Facturation Service') {
             steps {
                 dir('Facturation') { 
-                    bat "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
+                    sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
                 }
             }
         }
@@ -58,7 +59,7 @@ pipeline {
         stage('Build Depense Service') {
             steps {
                 dir('Depense') { 
-                    bat "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
+                    sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
                 }
             }
         }
@@ -66,7 +67,7 @@ pipeline {
         stage('Build Bank Service') {
             steps {
                 dir('BanqueService') { 
-                    bat "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
+                    sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
                 }
             }
         }
@@ -74,53 +75,53 @@ pipeline {
         stage('Build ReglementAffectation Service') {
             steps {
                 dir('ReglementAffectation') { 
-                    bat "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
+                    sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" 
                 }
             }
         }
 
         // ---------- Frontend Build ----------
         stage('Build Angular Frontend') {
-            steps {
-                dir('BankprojetFront') {
-                    bat """
-                        echo "=== Build Angular - Contournement total des budgets ==="
-                        npm config set legacy-peer-deps true
-                        npm install
-                        npm install @popperjs/core --save
+    steps {
+        dir('BankprojetFront') {
+            sh '''
+                echo "=== Build Angular - Contournement total des budgets ==="
+                npm config set legacy-peer-deps true
+                npm install
+                npm install @popperjs/core --save
+                
+                # Modifier angular.json pour désactiver les budgets
+                if [ -f "angular.json" ]; then
+                    echo "Désactivation des budgets dans angular.json..."
+                    node -e "
+                        const fs = require('fs');
+                        const config = JSON.parse(fs.readFileSync('angular.json', 'utf8'));
+                        const project = Object.keys(config.projects)[0];
                         
-                        # Modifier angular.json pour désactiver les budgets
-                        if [ -f "angular.json" ]; then
-                            echo "Désactivation des budgets dans angular.json..."
-                            node -e "
-                                const fs = require('fs');
-                                const config = JSON.parse(fs.readFileSync('angular.json', 'utf8'));
-                                const project = Object.keys(config.projects)[0];
-                                
-                                # Supprimer complètement la section budgets
-                                if (config.projects[project]?.architect?.build?.configurations?.production?.budgets) {
-                                    delete config.projects[project].architect.build.configurations.production.budgets;
-                                }
-                                
-                                fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
-                                console.log('✅ Budgets désactivés');
-                            "
-                        fi
+                        // Supprimer complètement la section budgets
+                        if (config.projects[project]?.architect?.build?.configurations?.production?.budgets) {
+                            delete config.projects[project].architect.build.configurations.production.budgets;
+                        }
                         
-                        # Build sans budgets
-                        npx ng build --configuration=production --source-map=false
-                        
-                        echo "✅ Build Angular terminé avec succès"
-                    """
-                }
-            }
+                        fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
+                        console.log('✅ Budgets désactivés');
+                    "
+                fi
+                
+                # Build sans budgets
+                npx ng build --configuration=production --source-map=false
+                
+                echo "✅ Build Angular terminé avec succès"
+            '''
         }
+    }
+}
 
         // ---------- Docker Images ----------
         stage('Build Eureka Image') {
             steps { 
                 dir('EurekaCompain') { 
-                    bat "docker build -t ${DOCKER_REGISTRY}/eureka-server ." 
+                    sh "docker build -t ${DOCKER_REGISTRY}/eureka-server ." 
                 } 
             }
         }
@@ -128,7 +129,7 @@ pipeline {
         stage('Build Gateway Image') {
             steps { 
                 dir('Gatway') { 
-                    bat "docker build -t ${DOCKER_REGISTRY}/gateway-service ." 
+                    sh "docker build -t ${DOCKER_REGISTRY}/gateway-service ." 
                 } 
             }
         }
@@ -136,7 +137,7 @@ pipeline {
         stage('Build Compain Image') {
             steps { 
                 dir('ProjetCompain') { 
-                    bat "docker build -t ${DOCKER_REGISTRY}/compain-service ." 
+                    sh "docker build -t ${DOCKER_REGISTRY}/compain-service ." 
                 } 
             }
         }
@@ -144,7 +145,7 @@ pipeline {
         stage('Build Facturation Image') {
             steps { 
                 dir('Facturation') { 
-                    bat "docker build -t ${DOCKER_REGISTRY}/facturation-service ." 
+                    sh "docker build -t ${DOCKER_REGISTRY}/facturation-service ." 
                 } 
             }
         }
@@ -152,7 +153,7 @@ pipeline {
         stage('Build Depense Image') {
             steps { 
                 dir('Depense') { 
-                    bat "docker build -t ${DOCKER_REGISTRY}/depense-service ." 
+                    sh "docker build -t ${DOCKER_REGISTRY}/depense-service ." 
                 } 
             }
         }
@@ -160,7 +161,7 @@ pipeline {
         stage('Build Bank Image') {
             steps { 
                 dir('BanqueService') { 
-                    bat "docker build -t ${DOCKER_REGISTRY}/bank-service ." 
+                    sh "docker build -t ${DOCKER_REGISTRY}/bank-service ." 
                 } 
             }
         }
@@ -168,7 +169,7 @@ pipeline {
         stage('Build ReglementAffectation Image') {
             steps { 
                 dir('ReglementAffectation') { 
-                    bat "docker build -t ${DOCKER_REGISTRY}/reglementaffectation-service ." 
+                    sh "docker build -t ${DOCKER_REGISTRY}/reglementaffectation-service ." 
                 } 
             }
         }
@@ -176,7 +177,7 @@ pipeline {
         stage('Build Angular Frontend Image') {
             steps { 
                 dir('BankprojetFront') { 
-                    bat "docker build -t ${DOCKER_REGISTRY}/angular-frontend ." 
+                    sh "docker build -t ${DOCKER_REGISTRY}/angular-frontend ." 
                 } 
             }
         }
@@ -185,15 +186,15 @@ pipeline {
         stage('Push Docker Images') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'DockerHub', passwordVariable: 'DockerHubPassword', usernameVariable: 'DockerHubUsername')]) {
-                    bat "docker login -u ${DockerHubUsername} -p ${DockerHubPassword}"
-                    bat "docker push ${DOCKER_REGISTRY}/eureka-server"
-                    bat "docker push ${DOCKER_REGISTRY}/gateway-service"
-                    bat "docker push ${DOCKER_REGISTRY}/compain-service"
-                    bat "docker push ${DOCKER_REGISTRY}/facturation-service"
-                    bat "docker push ${DOCKER_REGISTRY}/depense-service"
-                    bat "docker push ${DOCKER_REGISTRY}/bank-service"
-                    bat "docker push ${DOCKER_REGISTRY}/reglementaffectation-service"
-                    bat "docker push ${DOCKER_REGISTRY}/angular-frontend"
+                    sh "docker login -u ${DockerHubUsername} -p ${DockerHubPassword}"
+                    sh "docker push ${DOCKER_REGISTRY}/eureka-server"
+                    sh "docker push ${DOCKER_REGISTRY}/gateway-service"
+                    sh "docker push ${DOCKER_REGISTRY}/compain-service"
+                    sh "docker push ${DOCKER_REGISTRY}/facturation-service"
+                    sh "docker push ${DOCKER_REGISTRY}/depense-service"
+                    sh "docker push ${DOCKER_REGISTRY}/bank-service"
+                    sh "docker push ${DOCKER_REGISTRY}/reglementaffectation-service"
+                    sh "docker push ${DOCKER_REGISTRY}/angular-frontend"
                 }
             }
         }
@@ -203,7 +204,7 @@ pipeline {
             steps {
                 script {
                     withKubeConfig([credentialsId: 'kubernetes-credentials-id']) {
-                        bat """
+                        sh """
                             kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
                             kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
                             sleep 20
@@ -223,7 +224,7 @@ pipeline {
                             'reglementaffectation-service', 'angular-frontend'
                         ]
                         services.each { service ->
-                            bat "kubectl rollout status deployment/${service} -n ${K8S_NAMESPACE} --timeout=300s"
+                            sh "kubectl rollout status deployment/${service} -n ${K8S_NAMESPACE} --timeout=300s"
                         }
                     }
                 }
