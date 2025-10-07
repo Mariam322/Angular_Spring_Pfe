@@ -21,7 +21,9 @@ spec:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:latest
     command:
-    - cat
+    - /busybox/sh
+    - -c
+    - sleep 9999999
     tty: true
     volumeMounts:
     - name: docker-config
@@ -34,11 +36,13 @@ spec:
         }
     }
 
-    tools { jdk 'jdk-17' }
+    tools {
+        jdk 'jdk-17'
+    }
 
     environment {
         DOCKER_REGISTRY = 'mariammseddi12'
-        K8S_NAMESPACE   = 'default'
+        K8S_NAMESPACE = 'default'
         MAVEN_COMPILER_VERSION = '-Dmaven.compiler.plugin.version=3.11.0'
     }
 
