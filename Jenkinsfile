@@ -37,7 +37,7 @@ spec:
           mountPath: /home/jenkins/agent/workspace
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.8.1
-      command: ["/busybox/cat"]
+      command: - /kaniko/executor
       tty: true
       volumeMounts:
         - name: docker-config
