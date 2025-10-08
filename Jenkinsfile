@@ -21,7 +21,10 @@ spec:
     command:
       - "/kaniko/executor"
     args:
-      - "--help"
+      - "--reproducible"
+      - "--no-push"
+      - "--context=/workspace"
+      - "--destination=dummy/dummy:latest"
     tty: true
     volumeMounts:
     - name: docker-config
