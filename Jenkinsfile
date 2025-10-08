@@ -19,8 +19,8 @@ spec:
     - cat
     tty: true
   - name: kaniko
-    # ✅ Image stable depuis GitHub Container Registry (GHCR)
-    image: ghcr.io/GoogleContainerTools/kaniko-project/executor:latest
+    # ✅ Image Kaniko publique, en minuscules (obligatoire)
+    image: ghcr.io/googlecontainertools/kaniko-project/executor:latest
     command:
     - sh
     - -c
