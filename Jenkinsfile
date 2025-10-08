@@ -15,12 +15,14 @@ spec:
         secretName: regcred
     - name: jenkins-workspace
       emptyDir: {}
+
   containers:
     - name: jnlp
       image: jenkins/inbound-agent:latest
       volumeMounts:
         - name: jenkins-workspace
           mountPath: /home/jenkins/agent/workspace
+
     - name: maven
       image: maven:3.9.9-eclipse-temurin-17
       command: ["cat"]
@@ -28,6 +30,7 @@ spec:
       volumeMounts:
         - name: jenkins-workspace
           mountPath: /home/jenkins/agent/workspace
+
     - name: node
       image: node:20
       command: ["cat"]
@@ -35,15 +38,17 @@ spec:
       volumeMounts:
         - name: jenkins-workspace
           mountPath: /home/jenkins/agent/workspace
+
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.8.1
-      command: - /kaniko/executor
+      command: ["/busybox/cat"]
       tty: true
       volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker/
         - name: jenkins-workspace
           mountPath: /home/jenkins/agent/workspace
+
   restartPolicy: Never
 """
     }
@@ -66,25 +71,73 @@ spec:
     stage('Build Microservices') {
       parallel {
         stage('Eureka') {
-          steps { container('maven') { dir('EurekaCompain') { sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" } } }
+          steps {
+            container('maven') {
+              dir('EurekaCompain') {
+                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
+              }
+            }
+          }
         }
+
         stage('Gateway') {
-          steps { container('maven') { dir('Gatway') { sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" } } }
+          steps {
+            container('maven') {
+              dir('Gatway') {
+                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
+              }
+            }
+          }
         }
+
         stage('Compain') {
-          steps { container('maven') { dir('ProjetCompain') { sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" } } }
+          steps {
+            container('maven') {
+              dir('ProjetCompain') {
+                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
+              }
+            }
+          }
         }
+
         stage('Facturation') {
-          steps { container('maven') { dir('Facturation') { sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" } } }
+          steps {
+            container('maven') {
+              dir('Facturation') {
+                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
+              }
+            }
+          }
         }
+
         stage('Depense') {
-          steps { container('maven') { dir('Depense') { sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" } } }
+          steps {
+            container('maven') {
+              dir('Depense') {
+                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
+              }
+            }
+          }
         }
+
         stage('Bank') {
-          steps { container('maven') { dir('BanqueService') { sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" } } }
+          steps {
+            container('maven') {
+              dir('BanqueService') {
+                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
+              }
+            }
+          }
         }
+
         stage('ReglementAffectation') {
-          steps { container('maven') { dir('ReglementAffectation') { sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" } } }
+          steps {
+            container('maven') {
+              dir('ReglementAffectation') {
+                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
+              }
+            }
+          }
         }
       }
     }
@@ -115,6 +168,7 @@ spec:
 
     stage('Build & Push Docker Images') {
       parallel {
+
         stage('Eureka Image') {
           steps {
             container('kaniko') {
