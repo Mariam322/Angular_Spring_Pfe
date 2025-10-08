@@ -18,13 +18,7 @@ spec:
     tty: true
   - name: kaniko
     image: docker.io/mariammseddi12/kaniko-executor:latest
-    command:
-      - "/kaniko/executor"
-    args:
-      - "--reproducible"
-      - "--no-push"
-      - "--context=/workspace"
-      - "--destination=dummy/dummy:latest"
+    command: ["/busybox/sh", "-c", "while true; do sleep 3600; done"]
     tty: true
     volumeMounts:
     - name: docker-config
