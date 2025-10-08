@@ -40,7 +40,8 @@ spec:
           mountPath: /home/jenkins/agent/workspace
 
     - name: kaniko
-      image: gcr.io/kaniko-project/executor:v1.8.1
+      image: gcr.io/kaniko-project/executor:debug
+      command: ["/busybox/sh", "-c", "while true; do sleep 3600; done"]
       
       tty: true
       volumeMounts:
