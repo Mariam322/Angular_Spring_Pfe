@@ -21,11 +21,9 @@ spec:
       command: ["cat"]
       tty: true
 
-    # ✅ Kaniko container (fix distroless /bin/sh)
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.8.1
-      command: ["/kaniko/executor"]
-      args: ["--verbosity=info", "--skip-tls-verify-pull"]
+      command: ["/busybox/cat"]
       tty: true
       securityContext:
         runAsUser: 0
@@ -40,7 +38,6 @@ spec:
 """
     }
   }
-
   environment {
     DOCKER_REGISTRY = 'mariammseddi12'
     K8S_NAMESPACE = 'default'
