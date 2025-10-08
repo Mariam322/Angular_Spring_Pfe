@@ -15,10 +15,10 @@ spec:
       command:
         - /kaniko/executor
       args:
-        - --context=dir:///workspace/BankprojetFront
-        - --dockerfile=/workspace/BankprojetFront/Dockerfile
-        - --destination=docker.io/mariammseddi12/angular-spring-pfe:latest
-        - --skip-tls-verify
+        - "--context=dir:///workspace/Angular_Spring_Pfe/BankprojetFront"
+        - "--dockerfile=/workspace/Angular_Spring_Pfe/BankprojetFront/Dockerfile"
+        - "--destination=docker.io/mariammseddi12/angular-spring-pfe:latest"
+        - "--skip-tls-verify"
       volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker/
