@@ -41,7 +41,7 @@ spec:
 
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.8.1
-      command: ["/busybox/cat"]
+      command: ["/bin/sh", "-c", "while true; do sleep 3600; done"]
       tty: true
       volumeMounts:
         - name: docker-config
