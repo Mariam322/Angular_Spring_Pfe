@@ -21,22 +21,22 @@ spec:
       command: ["cat"]
       tty: true
 
-    # ✅ Kaniko container
+    # ✅ Kaniko container (fix distroless /bin/sh)
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.8.1
-      command: ["/bin/sh", "-c", "tail -f /dev/null"]
+      command: ["/kaniko/executor"]
+      args: ["--verbosity=info", "--skip-tls-verify-pull"]
       tty: true
       securityContext:
         runAsUser: 0
       volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker/
-
+  restartPolicy: Never
   volumes:
     - name: docker-config
       secret:
         secretName: regcred
-  restartPolicy: Never
 """
     }
   }
