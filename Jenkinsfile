@@ -12,24 +12,23 @@ spec:
   containers:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:v1.8.1
-    
-       command:
+    command:
       - /kaniko/executor
     args:
       - "--context=dir:///workspace/BankprojetFront"
       - "--dockerfile=/workspace/BankprojetFront/Dockerfile"
       - "--destination=docker.io/mariammseddi12/angular-spring-pfe:latest"
       - "--skip-tls-verify"
+    volumeMounts:
+      - name: docker-config
+        mountPath: /kaniko/.docker/
     tty: true
     securityContext:
       runAsUser: 0
-    volumeMounts:
-    - name: docker-config
-      mountPath: /kaniko/.docker/
   volumes:
-  - name: docker-config
-    secret:
-      secretName: regcred
+    - name: docker-config
+      secret:
+        secretName: regcred
   restartPolicy: Never
 """
     }
