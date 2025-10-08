@@ -19,8 +19,8 @@ spec:
     - cat
     tty: true
   - name: kaniko
-    # ✅ Image Kaniko publique, en minuscules (obligatoire)
-    image: ghcr.io/googlecontainertools/kaniko-project/executor:latest
+    # ✅ Image Kaniko officielle depuis Docker Hub (plus fiable que gcr.io)
+    image: docker.io/kaniko-project/executor:v1.23.2-debug
     command:
     - sh
     - -c
@@ -49,7 +49,7 @@ spec:
 
     stages {
 
-        /* === 1️⃣ Checkout === */
+        /* === 1️⃣ Checkout Code === */
         stage('Checkout Code') {
             steps {
                 git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
