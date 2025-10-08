@@ -12,15 +12,14 @@ spec:
   containers:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:v1.8.1
-    command:
-      - /busybox/sh
-      - -c
-      - |
-        /kaniko/executor \
-          --context=dir:///workspace/BankprojetFront \
-          --dockerfile=/workspace/BankprojetFront/Dockerfile \
-          --destination=docker.io/mariammseddi12/angular-spring-pfe:latest \
-          --skip-tls-verify
+    
+       command:
+      - /kaniko/executor
+    args:
+      - "--context=dir:///workspace/BankprojetFront"
+      - "--dockerfile=/workspace/BankprojetFront/Dockerfile"
+      - "--destination=docker.io/mariammseddi12/angular-spring-pfe:latest"
+      - "--skip-tls-verify"
     tty: true
     securityContext:
       runAsUser: 0
