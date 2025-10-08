@@ -19,8 +19,8 @@ spec:
     - cat
     tty: true
   - name: kaniko
-    # ✅ Utilise un registre public (Docker Hub ou GitHub) qui ne bloque pas l’accès
-    image: docker.io/kaniko-project/executor:latest
+    # ✅ Image stable depuis GitHub Container Registry (GHCR)
+    image: ghcr.io/GoogleContainerTools/kaniko-project/executor:latest
     command:
     - sh
     - -c
