@@ -17,9 +17,9 @@ spec:
     command: ["cat"]
     tty: true
   - name: kaniko
-    # ✅ Miroir public fonctionnel Kaniko (Docker Hub)
-    image: docker.io/omio/gcr.io.kaniko-project.executor:latest
-    command: ["sleep", "3600"]
+    # ✅ Ton image Kaniko debug hébergée sur ton Docker Hub
+    image: docker.io/mariammseddi12/kaniko-executor:debug
+    command: ["/busybox/sh", "-c", "tail -f /dev/null"]
     tty: true
     volumeMounts:
     - name: docker-config
