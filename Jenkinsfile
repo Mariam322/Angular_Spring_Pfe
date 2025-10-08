@@ -17,7 +17,8 @@ spec:
     command: ["cat"]
     tty: true
   - name: kaniko
-    image: docker.io/kaniko-project/executor:v1.23.2-debug
+    # ✅ Correction ici : image Kaniko officielle depuis Google Container Registry
+    image: gcr.io/kaniko-project/executor:v1.23.2
     command: ["sleep", "3600"]
     tty: true
     volumeMounts:
@@ -26,7 +27,7 @@ spec:
   volumes:
   - name: docker-config
     secret:
-      secretName: regcred
+      secretName: regcred   # ton secret Docker Hub (si tu veux pousser sur Docker Hub)
 """
         }
     }
