@@ -17,9 +17,9 @@ spec:
     command: ["cat"]
     tty: true
   - name: kaniko
-    # ✅ Image miroir publique sur Docker Hub (pas besoin d’accès à gcr.io)
+    # ✅ Image miroir publique et stable (pas besoin d’accès GCR)
     image: docker.io/omio/gcr.io.kaniko-project.executor:latest
-    command: ["/kaniko/executor", "--help"]
+    command: ["/busybox/sh", "-c", "tail -f /dev/null"]
     tty: true
     volumeMounts:
     - name: docker-config
@@ -44,7 +44,7 @@ spec:
 
     stages {
 
-        /* === 1️⃣ Cloner le code === */
+        /* === 1️⃣ Cloner le code depuis GitHub === */
         stage('Checkout Code') {
             steps {
                 git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
@@ -108,7 +108,7 @@ spec:
             }
         }
 
-        /* === 5️⃣ Build & Push Docker Images avec Kaniko === */
+        /* === 5️⃣ Build & Push Docker Images === */
         stage('Build & Push Docker Images') {
             steps {
                 container('kaniko') {
@@ -142,7 +142,7 @@ spec:
             }
         }
 
-        /* === 6️⃣ Déploiement Kubernetes sur OVH === */
+        /* === 6️⃣ Déploiement sur Kubernetes OVH === */
         stage('Deploy to OVH Kubernetes') {
             steps {
                 script {
