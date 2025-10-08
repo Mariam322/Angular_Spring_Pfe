@@ -17,8 +17,8 @@ spec:
     command: ["cat"]
     tty: true
   - name: kaniko
-    # ✅ Correction ici : image Kaniko officielle depuis Google Container Registry
-    image: gcr.io/kaniko-project/executor:latest
+    # ✅ Image Kaniko miroir public (fiable sur OVH)
+    image: ghcr.io/googlecontainertools/kaniko-executor:latest
     command: ["sleep", "3600"]
     tty: true
     volumeMounts:
@@ -27,7 +27,7 @@ spec:
   volumes:
   - name: docker-config
     secret:
-      secretName: regcred   # ton secret Docker Hub (si tu veux pousser sur Docker Hub)
+      secretName: regcred
 """
         }
     }
@@ -43,7 +43,6 @@ spec:
     }
 
     stages {
-
         stage('Checkout Code') {
             steps {
                 git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
