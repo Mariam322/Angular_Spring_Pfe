@@ -10,21 +10,19 @@ metadata:
 spec:
   serviceAccountName: default
   containers:
-  - name: kaniko
-    image: gcr.io/kaniko-project/executor:v1.8.1
-    command:
-      - /kaniko/executor
-    args:
-      - "--context=dir:///workspace/BankprojetFront"
-      - "--dockerfile=/workspace/BankprojetFront/Dockerfile"
-      - "--destination=docker.io/mariammseddi12/angular-spring-pfe:latest"
-      - "--skip-tls-verify"
-    volumeMounts:
-      - name: docker-config
-        mountPath: /kaniko/.docker/
-    tty: true
-    securityContext:
-      runAsUser: 0
+    - name: kaniko
+      image: gcr.io/kaniko-project/executor:v1.8.1
+      args:
+        - "--context=dir:///workspace/BankprojetFront"
+        - "--dockerfile=/workspace/BankprojetFront/Dockerfile"
+        - "--destination=docker.io/mariammseddi12/angular-spring-pfe:latest"
+        - "--skip-tls-verify"
+      volumeMounts:
+        - name: docker-config
+          mountPath: /kaniko/.docker/
+      tty: true
+      securityContext:
+        runAsUser: 0
   volumes:
     - name: docker-config
       secret:
