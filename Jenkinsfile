@@ -17,8 +17,7 @@ spec:
     command: ["cat"]
     tty: true
   - name: kaniko
-    # ✅ Image debug officielle compatible /bin/sh
-    image: docker.io/kanikoproject/executor:debug
+    image: docker.io/mariammseddi12/kaniko-executor:latest
     command: ["/bin/sh", "-c", "tail -f /dev/null"]
     tty: true
     volumeMounts:
@@ -43,6 +42,7 @@ spec:
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
