@@ -13,15 +13,12 @@ spec:
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.8.1
       command:
-        - /bin/sh
-        - -c
+        - /kaniko/executor
       args:
-        - >
-          /kaniko/executor
-          --context=dir:///workspace/BankprojetFront
-          --dockerfile=/workspace/BankprojetFront/Dockerfile
-          --destination=docker.io/mariammseddi12/angular-spring-pfe:latest
-          --skip-tls-verify
+        - --context=dir:///workspace/BankprojetFront
+        - --dockerfile=/workspace/BankprojetFront/Dockerfile
+        - --destination=docker.io/mariammseddi12/angular-spring-pfe:latest
+        - --skip-tls-verify
       volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker/
@@ -36,6 +33,7 @@ spec:
 """
     }
   }
+
   environment {
     DOCKER_REGISTRY = 'mariammseddi12'
     K8S_NAMESPACE = 'default'
