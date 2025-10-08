@@ -23,7 +23,7 @@ spec:
 
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.9.0
-      command: ["/busybox/sh", "-c", "while true; do sleep 3600; done"]
+      command: ["/kaniko/executor"]
       tty: true
       volumeMounts:
         - name: docker-config
@@ -44,15 +44,12 @@ spec:
 
   stages {
 
-    // =======================================================
     stage('Checkout Code') {
       steps {
-        echo "🔹 Clonage du dépôt principal..."
         git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
       }
     }
 
-    // =======================================================
     stage('Build Microservices') {
       parallel {
         stage('Eureka') {
@@ -79,17 +76,14 @@ spec:
       }
     }
 
-    // =======================================================
     stage('Build Angular Frontend') {
       steps {
         container('node') {
           dir('BankprojetFront') {
             sh '''
-              echo "=== 🚧 Build Angular - Désactivation des budgets ==="
               npm config set legacy-peer-deps true
               npm install
               npm install @popperjs/core --save
-
               node -e "
                 const fs = require('fs');
                 const config = JSON.parse(fs.readFileSync('angular.json', 'utf8'));
@@ -100,141 +94,83 @@ spec:
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
                 console.log('✅ Budgets désactivés');
               "
-
               npx ng build --configuration=production --source-map=false
-              echo "✅ Build Angular terminé avec succès"
             '''
           }
         }
       }
     }
 
-    // =======================================================
-    stage('Build & Push Docker Images (via Kaniko)') {
+    stage('Build & Push Docker Images (Kaniko)') {
       parallel {
         stage('Eureka Image') {
           steps {
             container('kaniko') {
               dir('EurekaCompain') {
-                sh """
-                  echo "📦 Building Eureka image..."
-                  /kaniko/executor --context `pwd` \
-                    --dockerfile Dockerfile \
-                    --destination=${DOCKER_REGISTRY}/eureka-server:latest \
-                    --skip-tls-verify
-                """
+                sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/eureka-server:latest --skip-tls-verify"
               }
             }
           }
         }
-
         stage('Gateway Image') {
           steps {
             container('kaniko') {
               dir('Gatway') {
-                sh """
-                  echo "📦 Building Gateway image..."
-                  /kaniko/executor --context `pwd` \
-                    --dockerfile Dockerfile \
-                    --destination=${DOCKER_REGISTRY}/gateway-service:latest \
-                    --skip-tls-verify
-                """
+                sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/gateway-service:latest --skip-tls-verify"
               }
             }
           }
         }
-
         stage('Compain Image') {
           steps {
             container('kaniko') {
               dir('ProjetCompain') {
-                sh """
-                  echo "📦 Building Compain image..."
-                  /kaniko/executor --context `pwd` \
-                    --dockerfile Dockerfile \
-                    --destination=${DOCKER_REGISTRY}/compain-service:latest \
-                    --skip-tls-verify
-                """
+                sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/compain-service:latest --skip-tls-verify"
               }
             }
           }
         }
-
         stage('Facturation Image') {
           steps {
             container('kaniko') {
               dir('Facturation') {
-                sh """
-                  echo "📦 Building Facturation image..."
-                  /kaniko/executor --context `pwd` \
-                    --dockerfile Dockerfile \
-                    --destination=${DOCKER_REGISTRY}/facturation-service:latest \
-                    --skip-tls-verify
-                """
+                sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/facturation-service:latest --skip-tls-verify"
               }
             }
           }
         }
-
         stage('Depense Image') {
           steps {
             container('kaniko') {
               dir('Depense') {
-                sh """
-                  echo "📦 Building Depense image..."
-                  /kaniko/executor --context `pwd` \
-                    --dockerfile Dockerfile \
-                    --destination=${DOCKER_REGISTRY}/depense-service:latest \
-                    --skip-tls-verify
-                """
+                sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/depense-service:latest --skip-tls-verify"
               }
             }
           }
         }
-
         stage('Bank Image') {
           steps {
             container('kaniko') {
               dir('BanqueService') {
-                sh """
-                  echo "📦 Building Bank image..."
-                  /kaniko/executor --context `pwd` \
-                    --dockerfile Dockerfile \
-                    --destination=${DOCKER_REGISTRY}/bank-service:latest \
-                    --skip-tls-verify
-                """
+                sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/bank-service:latest --skip-tls-verify"
               }
             }
           }
         }
-
         stage('ReglementAffectation Image') {
           steps {
             container('kaniko') {
               dir('ReglementAffectation') {
-                sh """
-                  echo "📦 Building ReglementAffectation image..."
-                  /kaniko/executor --context `pwd` \
-                    --dockerfile Dockerfile \
-                    --destination=${DOCKER_REGISTRY}/reglementaffectation-service:latest \
-                    --skip-tls-verify
-                """
+                sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/reglementaffectation-service:latest --skip-tls-verify"
               }
             }
           }
         }
-
         stage('Angular Image') {
           steps {
             container('kaniko') {
               dir('BankprojetFront') {
-                sh """
-                  echo "📦 Building Angular image..."
-                  /kaniko/executor --context `pwd` \
-                    --dockerfile Dockerfile \
-                    --destination=${DOCKER_REGISTRY}/angular-frontend:latest \
-                    --skip-tls-verify
-                """
+                sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/angular-frontend:latest --skip-tls-verify"
               }
             }
           }
@@ -242,16 +178,14 @@ spec:
       }
     }
 
-    // =======================================================
     stage('Deploy to OVH Kubernetes') {
       steps {
         script {
           withKubeConfig([credentialsId: 'kubernetes-credentials-id']) {
-            echo "🚀 Déploiement des services sur le cluster OVH..."
             sh """
               kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
               kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
-              sleep 15
+              sleep 10
               kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
               kubectl apply -f kubernetes/compain-service.yaml -n ${K8S_NAMESPACE}
               kubectl apply -f kubernetes/facturation-service.yaml -n ${K8S_NAMESPACE}
@@ -260,11 +194,10 @@ spec:
               kubectl apply -f kubernetes/reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
               kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
             """
-
             def services = [
-              'eureka-server', 'gateway-service', 'compain-service',
-              'facturation-service', 'depense-service', 'bank-service',
-              'reglementaffectation-service', 'angular-frontend'
+              'eureka-server','gateway-service','compain-service',
+              'facturation-service','depense-service','bank-service',
+              'reglementaffectation-service','angular-frontend'
             ]
             services.each { svc ->
               sh "kubectl rollout status deployment/${svc} -n ${K8S_NAMESPACE} --timeout=300s"
@@ -276,11 +209,7 @@ spec:
   }
 
   post {
-    success {
-      echo '✅ Pipeline complet exécuté avec succès (Build + Push + Deploy) 🚀'
-    }
-    failure {
-      echo '❌ Le pipeline a échoué — vérifie les logs Jenkins pour plus de détails.'
-    }
+    success { echo '✅ Pipeline complet exécuté avec succès (Build + Push + Deploy)' }
+    failure { echo '❌ Le pipeline a échoué — consulte les logs Jenkins pour les détails.' }
   }
 }
