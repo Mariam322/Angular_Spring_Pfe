@@ -23,7 +23,9 @@ spec:
 
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.8.1
-      command: ["/busybox/sh", "-c", "while true; do sleep 3600; done"]
+      # CORRECTION APPLIQUÉE ICI : Utiliser 'sleep' pour maintenir le conteneur en vie
+      command: ["sleep"] 
+      args: ["36000"]
       tty: true
       securityContext:
         runAsUser: 0
