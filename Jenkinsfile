@@ -23,9 +23,8 @@ spec:
 
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.8.1
-      # CORRECTION APPLIQUÉE ICI : Utiliser 'sleep' pour maintenir le conteneur en vie
-      command: ["sleep"] 
-      args: ["36000"]
+      # NOUVELLE CORRECTION : Utiliser 'cat' pour maintenir le conteneur en vie (similaire aux autres)
+      command: ["cat"] 
       tty: true
       securityContext:
         runAsUser: 0
