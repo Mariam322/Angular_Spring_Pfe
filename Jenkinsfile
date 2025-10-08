@@ -14,9 +14,9 @@ spec:
       command:
         - "/kaniko/executor"
       args:
-        - "--context=dir:///workspace"
-        - "--dockerfile=/workspace/Dockerfile"
-        - "--destination=mariammseddi12/angular-spring-pfe:latest"
+        - "--context=dir:///workspace/BankprojetFront"
+        - "--dockerfile=/workspace/BankprojetFront/Dockerfile"
+        - "--destination=docker.io/mariammseddi12/angular-spring-pfe:latest"
         - "--skip-tls-verify"
       volumeMounts:
         - name: docker-config
