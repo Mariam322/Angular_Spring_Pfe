@@ -6,25 +6,32 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    app: kaniko-test
+    app: kaniko-agent
 spec:
+  serviceAccountName: default
   containers:
-    - name: kaniko
-      image: gcr.io/kaniko-project/executor:v1.8.1
-      command:
-        - "/kaniko/executor"
-      args:
-        - "--context=dir:///workspace/BankprojetFront"
-        - "--dockerfile=/workspace/BankprojetFront/Dockerfile"
-        - "--destination=docker.io/mariammseddi12/angular-spring-pfe:latest"
-        - "--skip-tls-verify"
-      volumeMounts:
-        - name: docker-config
-          mountPath: /kaniko/.docker/
-  volumes:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:v1.8.1
+    command:
+      - /busybox/sh
+      - -c
+      - |
+        /kaniko/executor \
+          --context=dir:///workspace/BankprojetFront \
+          --dockerfile=/workspace/BankprojetFront/Dockerfile \
+          --destination=docker.io/mariammseddi12/angular-spring-pfe:latest \
+          --skip-tls-verify
+    tty: true
+    securityContext:
+      runAsUser: 0
+    volumeMounts:
     - name: docker-config
-      secret:
-        secretName: regcred
+      mountPath: /kaniko/.docker/
+  volumes:
+  - name: docker-config
+    secret:
+      secretName: regcred
+  restartPolicy: Never
 """
     }
   }
