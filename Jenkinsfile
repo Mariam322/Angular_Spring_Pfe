@@ -19,9 +19,11 @@ spec:
     - cat
     tty: true
   - name: kaniko
-    image: gcr.io/kaniko-project/executor:latest
+    image: gcr.io/kaniko-project/executor:debug
     command:
-    - cat
+    - sh
+    - -c
+    - "while true; do sleep 3600; done"
     tty: true
     volumeMounts:
     - name: docker-config
@@ -46,12 +48,14 @@ spec:
 
     stages {
 
+        /* === 1️⃣ Checkout === */
         stage('Checkout Code') {
             steps {
                 git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
             }
         }
 
+        /* === 2️⃣ Build Backend Services === */
         stage('Build Backend Services') {
             steps {
                 container('maven') {
@@ -72,6 +76,7 @@ spec:
             }
         }
 
+        /* === 3️⃣ Build Angular Frontend === */
         stage('Build Angular Frontend') {
             steps {
                 container('node') {
@@ -89,6 +94,7 @@ spec:
             }
         }
 
+        /* === 4️⃣ Vérifier le secret Docker Hub === */
         stage('Vérifier le secret Docker Hub') {
             steps {
                 container('kaniko') {
@@ -106,6 +112,7 @@ spec:
             }
         }
 
+        /* === 5️⃣ Build & Push Docker Images === */
         stage('Build & Push Docker Images (Kaniko)') {
             steps {
                 container('kaniko') {
@@ -139,11 +146,13 @@ spec:
             }
         }
 
+        /* === 6️⃣ Déploiement Kubernetes === */
         stage('Deploy to OVH Kubernetes') {
             steps {
                 script {
                     withKubeConfig([credentialsId: 'kubernetes-credentials-id']) {
                         sh """
+                            echo "🚀 Déploiement des manifests dans ${K8S_NAMESPACE}"
                             kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
                             kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
                             sleep 20
@@ -170,6 +179,7 @@ spec:
         }
     }
 
+    /* === 7️⃣ Post Actions === */
     post {
         success {
             echo '✅ Pipeline complet (backend + frontend) terminé avec succès !'
