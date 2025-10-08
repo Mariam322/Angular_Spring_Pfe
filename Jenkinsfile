@@ -9,7 +9,18 @@ metadata:
     app: kaniko-agent
 spec:
   serviceAccountName: default
+  volumes:
+    - name: docker-config
+      secret:
+        secretName: regcred
+    - name: workspace-volume
+      emptyDir: {}
   containers:
+    - name: jnlp
+      image: jenkins/inbound-agent:latest
+      volumeMounts:
+        - name: workspace-volume
+          mountPath: /workspace
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.8.1
       command:
@@ -22,17 +33,16 @@ spec:
       volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker/
-      tty: true
+        - name: workspace-volume
+          mountPath: /workspace
       securityContext:
         runAsUser: 0
-  volumes:
-    - name: docker-config
-      secret:
-        secretName: regcred
+      tty: true
   restartPolicy: Never
 """
     }
   }
+
 
   environment {
     DOCKER_REGISTRY = 'mariammseddi12'
