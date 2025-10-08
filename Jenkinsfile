@@ -23,14 +23,14 @@ spec:
 
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.8.1
-      command: ["sleep"]
-      args: ["999999"]
+      args: ["version"]
       tty: true
       securityContext:
         runAsUser: 0
       volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker/
+  restartPolicy: Never
   volumes:
     - name: docker-config
       secret:
@@ -105,28 +105,28 @@ spec:
     stage('Build & Push Docker Images (Kaniko)') {
       parallel {
         stage('Eureka Image') {
-          steps { container('kaniko') { dir('EurekaCompain') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/eureka-server:latest --skip-tls-verify" } } }
+          steps { container('kaniko') { dir('EurekaCompain') { sh "executor --context `pwd` --destination=${DOCKER_REGISTRY}/eureka-server:latest --skip-tls-verify" } } }
         }
         stage('Gateway Image') {
-          steps { container('kaniko') { dir('Gatway') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/gateway-service:latest --skip-tls-verify" } } }
+          steps { container('kaniko') { dir('Gatway') { sh "executor --context `pwd` --destination=${DOCKER_REGISTRY}/gateway-service:latest --skip-tls-verify" } } }
         }
         stage('Compain Image') {
-          steps { container('kaniko') { dir('ProjetCompain') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/compain-service:latest --skip-tls-verify" } } }
+          steps { container('kaniko') { dir('ProjetCompain') { sh "executor --context `pwd` --destination=${DOCKER_REGISTRY}/compain-service:latest --skip-tls-verify" } } }
         }
         stage('Facturation Image') {
-          steps { container('kaniko') { dir('Facturation') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/facturation-service:latest --skip-tls-verify" } } }
+          steps { container('kaniko') { dir('Facturation') { sh "executor --context `pwd` --destination=${DOCKER_REGISTRY}/facturation-service:latest --skip-tls-verify" } } }
         }
         stage('Depense Image') {
-          steps { container('kaniko') { dir('Depense') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/depense-service:latest --skip-tls-verify" } } }
+          steps { container('kaniko') { dir('Depense') { sh "executor --context `pwd` --destination=${DOCKER_REGISTRY}/depense-service:latest --skip-tls-verify" } } }
         }
         stage('Bank Image') {
-          steps { container('kaniko') { dir('BanqueService') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/bank-service:latest --skip-tls-verify" } } }
+          steps { container('kaniko') { dir('BanqueService') { sh "executor --context `pwd` --destination=${DOCKER_REGISTRY}/bank-service:latest --skip-tls-verify" } } }
         }
         stage('ReglementAffectation Image') {
-          steps { container('kaniko') { dir('ReglementAffectation') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/reglementaffectation-service:latest --skip-tls-verify" } } }
+          steps { container('kaniko') { dir('ReglementAffectation') { sh "executor --context `pwd` --destination=${DOCKER_REGISTRY}/reglementaffectation-service:latest --skip-tls-verify" } } }
         }
         stage('Angular Image') {
-          steps { container('kaniko') { dir('BankprojetFront') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/angular-frontend:latest --skip-tls-verify" } } }
+          steps { container('kaniko') { dir('BankprojetFront') { sh "executor --context `pwd` --destination=${DOCKER_REGISTRY}/angular-frontend:latest --skip-tls-verify" } } }
         }
       }
     }
