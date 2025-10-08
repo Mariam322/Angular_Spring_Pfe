@@ -1,36 +1,26 @@
 pipeline {
   agent {
     kubernetes {
-      label 'kaniko-agent'
       yaml """
 apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    app: kaniko-agent
+    app: kaniko-test
 spec:
-  serviceAccountName: default
   containers:
-    - name: maven
-      image: maven:3.9.9-eclipse-temurin-17
-      command: ["cat"]
-      tty: true
-
-    - name: node
-      image: node:20
-      command: ["cat"]
-      tty: true
-
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.8.1
-      command: ["/busybox/cat"]
-      tty: true
-      securityContext:
-        runAsUser: 0
+      command:
+        - "/kaniko/executor"
+      args:
+        - "--context=dir:///workspace"
+        - "--dockerfile=/workspace/Dockerfile"
+        - "--destination=mariammseddi12/angular-spring-pfe:latest"
+        - "--skip-tls-verify"
       volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker/
-  restartPolicy: Never
   volumes:
     - name: docker-config
       secret:
