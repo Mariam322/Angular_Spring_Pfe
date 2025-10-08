@@ -6,27 +6,31 @@ pipeline {
 apiVersion: v1
 kind: Pod
 spec:
-  serviceAccountName: default
+  serviceAccountName: jenkins
+  imagePullSecrets:
+    - name: regcred
   containers:
   - name: maven
     image: maven:3.9.9-eclipse-temurin-17
     command: ["cat"]
     tty: true
+
   - name: node
     image: node:20
     command: ["cat"]
     tty: true
+
   - name: kaniko
-    image: public.ecr.aws/bitnami/kaniko:latest
+    image: gcr.io/kaniko-project/executor:latest
     command: ["/bin/sh", "-c", "while true; do sleep 3600; done"]
     tty: true
     volumeMounts:
-    - name: docker-config
-      mountPath: /kaniko/.docker/
+      - name: docker-config
+        mountPath: /kaniko/.docker/
   volumes:
-  - name: docker-config
-    secret:
-      secretName: regcred
+    - name: docker-config
+      secret:
+        secretName: regcred
 """
         }
     }
@@ -40,6 +44,7 @@ spec:
     stages {
         stage('Checkout Code') {
             steps {
+                echo "📦 Clonage du dépôt Git..."
                 git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
             }
         }
@@ -49,13 +54,17 @@ spec:
                 container('maven') {
                     script {
                         def services = [
-                            "EurekaCompain", "Gatway", "ProjetCompain",
-                            "Facturation", "Depense", "BanqueService",
+                            "EurekaCompain",
+                            "Gatway",
+                            "ProjetCompain",
+                            "Facturation",
+                            "Depense",
+                            "BanqueService",
                             "ReglementAffectation"
                         ]
                         for (svc in services) {
                             dir(svc) {
-                                echo "🏗️ Building backend: ${svc}"
+                                echo "🏗️ Compilation du backend : ${svc}"
                                 sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
                             }
                         }
@@ -68,14 +77,14 @@ spec:
             steps {
                 container('node') {
                     dir('BankprojetFront') {
+                        echo "⚙️ Installation des dépendances Angular..."
                         sh '''
-                            echo "=== Build Angular ==="
                             npm config set legacy-peer-deps true
                             npm install
                             npm install @popperjs/core --save
                             npx ng build --configuration=production --source-map=false
-                            echo "✅ Build Angular terminé avec succès"
                         '''
+                        echo "✅ Build Angular terminé avec succès."
                     }
                 }
             }
@@ -114,8 +123,8 @@ spec:
 
                         for (img in images) {
                             dir(img.dir) {
+                                echo "🚀 Construction et push de l’image Docker : ${img.name}"
                                 sh """
-                                    echo "🚀 Build & Push ${img.name}"
                                     /kaniko/executor \
                                       --context . \
                                       --dockerfile Dockerfile \
@@ -132,10 +141,13 @@ spec:
 
     post {
         success {
-            echo '✅ Pipeline complet exécuté avec succès.'
+            echo '✅ Pipeline exécuté avec succès.'
         }
         failure {
-            echo '❌ Le pipeline a échoué. Vérifiez les logs Jenkins.'
+            echo '❌ Le pipeline a échoué. Consultez les logs Jenkins pour les détails.'
+        }
+        always {
+            echo '🏁 Fin du pipeline.'
         }
     }
 }
