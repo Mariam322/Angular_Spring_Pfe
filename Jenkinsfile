@@ -18,7 +18,7 @@ spec:
     tty: true
   - name: kaniko
     image: docker.io/mariammseddi12/kaniko-executor:latest
-    command: ["/busybox/sh", "-c", "while true; do sleep 3600; done"]
+    command: ["sleep", "3600"]
     tty: true
     volumeMounts:
     - name: docker-config
@@ -29,10 +29,6 @@ spec:
       secretName: regcred
 """
         }
-    }
-
-    tools {
-        jdk 'jdk-17'
     }
 
     environment {
@@ -85,6 +81,22 @@ spec:
             }
         }
 
+        stage('Vérifier Secret Docker') {
+            steps {
+                container('kaniko') {
+                    sh '''
+                        echo "🔍 Vérification du secret Docker..."
+                        if [ -f /kaniko/.docker/config.json ]; then
+                            echo "✅ Secret Docker monté avec succès."
+                        else
+                            echo "❌ ERREUR : secret Docker non monté."
+                            exit 1
+                        fi
+                    '''
+                }
+            }
+        }
+
         stage('Build & Push Docker Images') {
             steps {
                 container('kaniko') {
@@ -108,7 +120,6 @@ spec:
                                       --context . \
                                       --dockerfile Dockerfile \
                                       --destination=${DOCKER_REGISTRY}/${img.name}:latest \
-                                      --insecure \
                                       --skip-tls-verify
                                 """
                             }
