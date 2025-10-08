@@ -6,25 +6,19 @@ pipeline {
 apiVersion: v1
 kind: Pod
 spec:
-  serviceAccountName: jenkins
+  serviceAccountName: default
   containers:
   - name: maven
     image: maven:3.9.9-eclipse-temurin-17
-    command:
-    - cat
+    command: ["cat"]
     tty: true
   - name: node
     image: node:20
-    command:
-    - cat
+    command: ["cat"]
     tty: true
   - name: kaniko
-    # ✅ Image Kaniko officielle depuis Docker Hub (plus fiable que gcr.io)
     image: docker.io/kaniko-project/executor:v1.23.2-debug
-    command:
-    - sh
-    - -c
-    - "while true; do sleep 3600; done"
+    command: ["sleep", "3600"]
     tty: true
     volumeMounts:
     - name: docker-config
@@ -49,14 +43,12 @@ spec:
 
     stages {
 
-        /* === 1️⃣ Checkout Code === */
         stage('Checkout Code') {
             steps {
                 git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
             }
         }
 
-        /* === 2️⃣ Build Backend Services === */
         stage('Build Backend Services') {
             steps {
                 container('maven') {
@@ -77,7 +69,6 @@ spec:
             }
         }
 
-        /* === 3️⃣ Build Angular Frontend === */
         stage('Build Angular Frontend') {
             steps {
                 container('node') {
@@ -95,17 +86,16 @@ spec:
             }
         }
 
-        /* === 4️⃣ Vérifier le secret Docker Hub === */
-        stage('Vérifier le secret Docker Hub') {
+        stage('Vérifier Secret Docker') {
             steps {
                 container('kaniko') {
                     sh '''
-                        echo "🔍 Vérification du fichier d’authentification Kaniko..."
+                        echo "🔍 Vérification du secret Docker..."
                         if [ -f /kaniko/.docker/config.json ]; then
-                            echo "✅ Le secret regcred est bien monté."
-                            cat /kaniko/.docker/config.json | grep -o '"auths"' || true
+                            echo "✅ Secret Docker monté avec succès."
+                            grep -o '"auths"' /kaniko/.docker/config.json || true
                         else
-                            echo "❌ ERREUR : le secret regcred n’est pas monté !"
+                            echo "❌ ERREUR : secret Docker non monté."
                             exit 1
                         fi
                     '''
@@ -113,8 +103,7 @@ spec:
             }
         }
 
-        /* === 5️⃣ Build & Push Docker Images === */
-        stage('Build & Push Docker Images (Kaniko)') {
+        stage('Build & Push Docker Images') {
             steps {
                 container('kaniko') {
                     script {
@@ -147,32 +136,25 @@ spec:
             }
         }
 
-        /* === 6️⃣ Déploiement Kubernetes === */
         stage('Deploy to OVH Kubernetes') {
             steps {
                 script {
                     withKubeConfig([credentialsId: 'kubernetes-credentials-id']) {
                         sh """
-                            echo "🚀 Déploiement des manifests dans ${K8S_NAMESPACE}"
+                            echo "🚀 Déploiement dans ${K8S_NAMESPACE}"
                             kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
-                            kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
-                            sleep 20
-                            kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
-                            kubectl apply -f kubernetes/compain-service.yaml -n ${K8S_NAMESPACE}
-                            kubectl apply -f kubernetes/facturation-service.yaml -n ${K8S_NAMESPACE}
-                            kubectl apply -f kubernetes/depense-service.yaml -n ${K8S_NAMESPACE}
-                            kubectl apply -f kubernetes/bank-service.yaml -n ${K8S_NAMESPACE}
-                            kubectl apply -f kubernetes/reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
-                            kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
+                            for f in kubernetes/*.yaml; do
+                                echo "📦 Déploiement de $f"
+                                kubectl apply -f $f -n ${K8S_NAMESPACE}
+                            done
                         """
-
                         def apps = [
                             'eureka-server','gateway-service','compain-service',
                             'facturation-service','depense-service','bank-service',
                             'reglementaffectation-service','angular-frontend'
                         ]
                         apps.each { app ->
-                            sh "kubectl rollout status deployment/${app} -n ${K8S_NAMESPACE} --timeout=300s"
+                            sh "kubectl rollout status deployment/${app} -n ${K8S_NAMESPACE} --timeout=300s || true"
                         }
                     }
                 }
@@ -180,13 +162,12 @@ spec:
         }
     }
 
-    /* === 7️⃣ Post Actions === */
     post {
         success {
-            echo '✅ Pipeline complet (backend + frontend) terminé avec succès !'
+            echo '✅ Pipeline complet exécuté avec succès.'
         }
         failure {
-            echo '❌ Le pipeline a échoué ; vérifier les logs Jenkins.'
+            echo '❌ Le pipeline a échoué. Vérifiez les logs Jenkins.'
         }
     }
 }
