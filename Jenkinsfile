@@ -17,9 +17,9 @@ spec:
     command: ["cat"]
     tty: true
   - name: kaniko
-    # ✅ Ton image Kaniko debug hébergée sur ton Docker Hub
-    image: docker.io/mariammseddi12/kaniko-executor:debug
-    command: ["/busybox/sh", "-c", "tail -f /dev/null"]
+    # ✅ Image miroir publique sur Docker Hub (pas besoin d’accès à gcr.io)
+    image: docker.io/omio/gcr.io.kaniko-project.executor:latest
+    command: ["/kaniko/executor", "--help"]
     tty: true
     volumeMounts:
     - name: docker-config
@@ -44,12 +44,14 @@ spec:
 
     stages {
 
+        /* === 1️⃣ Cloner le code === */
         stage('Checkout Code') {
             steps {
                 git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
             }
         }
 
+        /* === 2️⃣ Build des services backend === */
         stage('Build Backend Services') {
             steps {
                 container('maven') {
@@ -70,6 +72,7 @@ spec:
             }
         }
 
+        /* === 3️⃣ Build du frontend Angular === */
         stage('Build Angular Frontend') {
             steps {
                 container('node') {
@@ -87,6 +90,7 @@ spec:
             }
         }
 
+        /* === 4️⃣ Vérifier le secret Docker Hub === */
         stage('Vérifier Secret Docker') {
             steps {
                 container('kaniko') {
@@ -104,6 +108,7 @@ spec:
             }
         }
 
+        /* === 5️⃣ Build & Push Docker Images avec Kaniko === */
         stage('Build & Push Docker Images') {
             steps {
                 container('kaniko') {
@@ -137,6 +142,7 @@ spec:
             }
         }
 
+        /* === 6️⃣ Déploiement Kubernetes sur OVH === */
         stage('Deploy to OVH Kubernetes') {
             steps {
                 script {
@@ -163,6 +169,7 @@ spec:
         }
     }
 
+    /* === 7️⃣ Post Actions === */
     post {
         success {
             echo '✅ Pipeline complet exécuté avec succès.'
