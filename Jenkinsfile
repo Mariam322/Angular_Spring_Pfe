@@ -22,8 +22,8 @@ spec:
       tty: true
 
     - name: kaniko
-      image: mariammseddi12/kaniko-executor:latest
-      command: ["/bin/sh", "-c", "while true; do sleep 3600; done"]
+      image: gcr.io/kaniko-project/executor:v1.9.0
+      command: ["/busybox/sh", "-c", "while true; do sleep 3600; done"]
       tty: true
       volumeMounts:
         - name: docker-config
@@ -56,73 +56,25 @@ spec:
     stage('Build Microservices') {
       parallel {
         stage('Eureka') {
-          steps {
-            container('maven') {
-              dir('EurekaCompain') {
-                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
-              }
-            }
-          }
+          steps { container('maven') { dir('EurekaCompain') { sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" } } }
         }
-
         stage('Gateway') {
-          steps {
-            container('maven') {
-              dir('Gatway') {
-                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
-              }
-            }
-          }
+          steps { container('maven') { dir('Gatway') { sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" } } }
         }
-
         stage('Compain') {
-          steps {
-            container('maven') {
-              dir('ProjetCompain') {
-                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
-              }
-            }
-          }
+          steps { container('maven') { dir('ProjetCompain') { sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" } } }
         }
-
         stage('Facturation') {
-          steps {
-            container('maven') {
-              dir('Facturation') {
-                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
-              }
-            }
-          }
+          steps { container('maven') { dir('Facturation') { sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" } } }
         }
-
         stage('Depense') {
-          steps {
-            container('maven') {
-              dir('Depense') {
-                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
-              }
-            }
-          }
+          steps { container('maven') { dir('Depense') { sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" } } }
         }
-
         stage('Bank') {
-          steps {
-            container('maven') {
-              dir('BanqueService') {
-                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
-              }
-            }
-          }
+          steps { container('maven') { dir('BanqueService') { sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" } } }
         }
-
         stage('ReglementAffectation') {
-          steps {
-            container('maven') {
-              dir('ReglementAffectation') {
-                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
-              }
-            }
-          }
+          steps { container('maven') { dir('ReglementAffectation') { sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}" } } }
         }
       }
     }
@@ -164,13 +116,13 @@ spec:
           steps {
             container('kaniko') {
               dir('EurekaCompain') {
-                sh '''
+                sh """
                   echo "📦 Building Eureka image..."
                   /kaniko/executor --context `pwd` \
                     --dockerfile Dockerfile \
                     --destination=${DOCKER_REGISTRY}/eureka-server:latest \
                     --skip-tls-verify
-                '''
+                """
               }
             }
           }
@@ -180,13 +132,13 @@ spec:
           steps {
             container('kaniko') {
               dir('Gatway') {
-                sh '''
+                sh """
                   echo "📦 Building Gateway image..."
                   /kaniko/executor --context `pwd` \
                     --dockerfile Dockerfile \
                     --destination=${DOCKER_REGISTRY}/gateway-service:latest \
                     --skip-tls-verify
-                '''
+                """
               }
             }
           }
@@ -196,13 +148,13 @@ spec:
           steps {
             container('kaniko') {
               dir('ProjetCompain') {
-                sh '''
+                sh """
                   echo "📦 Building Compain image..."
                   /kaniko/executor --context `pwd` \
                     --dockerfile Dockerfile \
                     --destination=${DOCKER_REGISTRY}/compain-service:latest \
                     --skip-tls-verify
-                '''
+                """
               }
             }
           }
@@ -212,13 +164,13 @@ spec:
           steps {
             container('kaniko') {
               dir('Facturation') {
-                sh '''
+                sh """
                   echo "📦 Building Facturation image..."
                   /kaniko/executor --context `pwd` \
                     --dockerfile Dockerfile \
                     --destination=${DOCKER_REGISTRY}/facturation-service:latest \
                     --skip-tls-verify
-                '''
+                """
               }
             }
           }
@@ -228,13 +180,13 @@ spec:
           steps {
             container('kaniko') {
               dir('Depense') {
-                sh '''
+                sh """
                   echo "📦 Building Depense image..."
                   /kaniko/executor --context `pwd` \
                     --dockerfile Dockerfile \
                     --destination=${DOCKER_REGISTRY}/depense-service:latest \
                     --skip-tls-verify
-                '''
+                """
               }
             }
           }
@@ -244,13 +196,13 @@ spec:
           steps {
             container('kaniko') {
               dir('BanqueService') {
-                sh '''
+                sh """
                   echo "📦 Building Bank image..."
                   /kaniko/executor --context `pwd` \
                     --dockerfile Dockerfile \
                     --destination=${DOCKER_REGISTRY}/bank-service:latest \
                     --skip-tls-verify
-                '''
+                """
               }
             }
           }
@@ -260,13 +212,13 @@ spec:
           steps {
             container('kaniko') {
               dir('ReglementAffectation') {
-                sh '''
+                sh """
                   echo "📦 Building ReglementAffectation image..."
                   /kaniko/executor --context `pwd` \
                     --dockerfile Dockerfile \
                     --destination=${DOCKER_REGISTRY}/reglementaffectation-service:latest \
                     --skip-tls-verify
-                '''
+                """
               }
             }
           }
@@ -276,13 +228,13 @@ spec:
           steps {
             container('kaniko') {
               dir('BankprojetFront') {
-                sh '''
+                sh """
                   echo "📦 Building Angular image..."
                   /kaniko/executor --context `pwd` \
                     --dockerfile Dockerfile \
                     --destination=${DOCKER_REGISTRY}/angular-frontend:latest \
                     --skip-tls-verify
-                '''
+                """
               }
             }
           }
