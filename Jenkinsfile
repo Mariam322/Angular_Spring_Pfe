@@ -21,9 +21,7 @@ spec:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:latest
     command:
-    - /busybox/sh
-    - -c
-    - sleep 9999999
+    - cat
     tty: true
     volumeMounts:
     - name: docker-config
@@ -48,14 +46,12 @@ spec:
 
     stages {
 
-        /* === 1️⃣ Checkout === */
         stage('Checkout Code') {
             steps {
                 git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
             }
         }
 
-        /* === 2️⃣ Backend Build === */
         stage('Build Backend Services') {
             steps {
                 container('maven') {
@@ -76,7 +72,6 @@ spec:
             }
         }
 
-        /* === 3️⃣ Frontend Build === */
         stage('Build Angular Frontend') {
             steps {
                 container('node') {
@@ -94,7 +89,6 @@ spec:
             }
         }
 
-        /* === 4️⃣ Vérification du secret Kaniko === */
         stage('Vérifier le secret Docker Hub') {
             steps {
                 container('kaniko') {
@@ -112,7 +106,6 @@ spec:
             }
         }
 
-        /* === 5️⃣ Build & Push Docker Images === */
         stage('Build & Push Docker Images (Kaniko)') {
             steps {
                 container('kaniko') {
@@ -146,7 +139,6 @@ spec:
             }
         }
 
-        /* === 6️⃣ Deploy to Kubernetes === */
         stage('Deploy to OVH Kubernetes') {
             steps {
                 script {
@@ -178,7 +170,6 @@ spec:
         }
     }
 
-    /* === 7️⃣ Post Actions === */
     post {
         success {
             echo '✅ Pipeline complet (backend + frontend) terminé avec succès !'
