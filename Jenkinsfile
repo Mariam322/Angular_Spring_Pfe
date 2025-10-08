@@ -23,9 +23,8 @@ spec:
 
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.8.1
-      # CORRECTION APPLIQUÉE ICI : Utiliser 'sleep' pour maintenir le conteneur en vie
-      command: ["sleep"] 
-      args: ["36000"]
+      command: ["/kaniko/executor"]
+      args: ["--help"]
       tty: true
       securityContext:
         runAsUser: 0
@@ -40,7 +39,6 @@ spec:
 """
     }
   }
-
   environment {
     DOCKER_REGISTRY = 'mariammseddi12'
     K8S_NAMESPACE = 'default'
