@@ -18,8 +18,8 @@ spec:
     tty: true
   - name: kaniko
     image: docker.io/mariammseddi12/kaniko-executor:latest
-    command: ["sleep", "3600"]
-    tty: true
+    command: ["/kaniko/executor", "--help"]
+    tty: false
     volumeMounts:
     - name: docker-config
       mountPath: /kaniko/.docker/
