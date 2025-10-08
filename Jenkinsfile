@@ -21,24 +21,26 @@ spec:
       command: ["cat"]
       tty: true
 
+    # ✅ Kaniko container
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.8.1
-      command: ["/kaniko/executor"]
-      args: ["--help"]
+      command: ["/bin/sh", "-c", "tail -f /dev/null"]
       tty: true
       securityContext:
         runAsUser: 0
       volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker/
-  restartPolicy: Never
+
   volumes:
     - name: docker-config
       secret:
         secretName: regcred
+  restartPolicy: Never
 """
     }
   }
+
   environment {
     DOCKER_REGISTRY = 'mariammseddi12'
     K8S_NAMESPACE = 'default'
@@ -46,15 +48,12 @@ spec:
   }
 
   stages {
-
-    // 🔹 Étape 1 : Récupération du code
     stage('Checkout Code') {
       steps {
         git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
       }
     }
 
-    // 🔹 Étape 2 : Build des microservices
     stage('Build Microservices') {
       parallel {
         stage('Eureka') {
@@ -81,13 +80,11 @@ spec:
       }
     }
 
-    // 🔹 Étape 3 : Build du frontend Angular
     stage('Build Angular Frontend') {
       steps {
         container('node') {
           dir('BankprojetFront') {
             sh '''
-              echo "=== Build Angular ==="
               npm config set legacy-peer-deps true
               npm install
               npm install @popperjs/core --save
@@ -99,7 +96,6 @@ spec:
                   delete config.projects[project].architect.build.configurations.production.budgets;
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
-                console.log('✅ Budgets désactivés');
               "
               npx ng build --configuration=production --source-map=false
             '''
@@ -108,7 +104,6 @@ spec:
       }
     }
 
-    // 🔹 Étape 4 : Build et Push des images Docker via Kaniko
     stage('Build & Push Docker Images (Kaniko)') {
       parallel {
         stage('Eureka Image') {
@@ -138,7 +133,6 @@ spec:
       }
     }
 
-    // 🔹 Étape 5 : Déploiement sur le cluster OVH
     stage('Deploy to OVH Kubernetes') {
       steps {
         script {
