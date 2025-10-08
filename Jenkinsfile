@@ -17,8 +17,8 @@ spec:
     command: ["cat"]
     tty: true
   - name: kaniko
-    # ✅ Miroir Kaniko compatible OVH (Docker Hub)
-    image: docker.io/zzxwill/kaniko-executor:latest
+    # ✅ Miroir public fonctionnel Kaniko (Docker Hub)
+    image: docker.io/omio/gcr.io.kaniko-project.executor:latest
     command: ["sleep", "3600"]
     tty: true
     volumeMounts:
@@ -43,6 +43,7 @@ spec:
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
