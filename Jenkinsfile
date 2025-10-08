@@ -17,9 +17,9 @@ spec:
     command: ["cat"]
     tty: true
   - name: kaniko
-    # ✅ Image miroir publique et stable (pas besoin d’accès GCR)
-    image: docker.io/omio/gcr.io.kaniko-project.executor:latest
-    command: ["/busybox/sh", "-c", "tail -f /dev/null"]
+    # ✅ Image debug officielle compatible /bin/sh
+    image: docker.io/kanikoproject/executor:debug
+    command: ["/bin/sh", "-c", "tail -f /dev/null"]
     tty: true
     volumeMounts:
     - name: docker-config
@@ -43,15 +43,12 @@ spec:
     }
 
     stages {
-
-        /* === 1️⃣ Cloner le code depuis GitHub === */
         stage('Checkout Code') {
             steps {
                 git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
             }
         }
 
-        /* === 2️⃣ Build des services backend === */
         stage('Build Backend Services') {
             steps {
                 container('maven') {
@@ -72,7 +69,6 @@ spec:
             }
         }
 
-        /* === 3️⃣ Build du frontend Angular === */
         stage('Build Angular Frontend') {
             steps {
                 container('node') {
@@ -90,7 +86,6 @@ spec:
             }
         }
 
-        /* === 4️⃣ Vérifier le secret Docker Hub === */
         stage('Vérifier Secret Docker') {
             steps {
                 container('kaniko') {
@@ -108,7 +103,6 @@ spec:
             }
         }
 
-        /* === 5️⃣ Build & Push Docker Images === */
         stage('Build & Push Docker Images') {
             steps {
                 container('kaniko') {
@@ -142,7 +136,6 @@ spec:
             }
         }
 
-        /* === 6️⃣ Déploiement sur Kubernetes OVH === */
         stage('Deploy to OVH Kubernetes') {
             steps {
                 script {
@@ -169,7 +162,6 @@ spec:
         }
     }
 
-    /* === 7️⃣ Post Actions === */
     post {
         success {
             echo '✅ Pipeline complet exécuté avec succès.'
