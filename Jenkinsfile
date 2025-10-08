@@ -17,8 +17,8 @@ spec:
     command: ["cat"]
     tty: true
   - name: kaniko
-    # ✅ Image Kaniko miroir public (fiable sur OVH)
-    image: ghcr.io/googlecontainertools/kaniko-executor:latest
+    # ✅ Miroir Kaniko compatible OVH (Docker Hub)
+    image: docker.io/zzxwill/kaniko-executor:latest
     command: ["sleep", "3600"]
     tty: true
     volumeMounts:
