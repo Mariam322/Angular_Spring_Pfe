@@ -6,51 +6,57 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    app: kaniko-agent
+    app: full-pipeline
 spec:
   serviceAccountName: default
   volumes:
     - name: docker-config
       secret:
         secretName: regcred
-    - name: workspace-volume
+    - name: jenkins-workspace
       emptyDir: {}
   containers:
     - name: jnlp
       image: jenkins/inbound-agent:latest
       volumeMounts:
-        - name: workspace-volume
-          mountPath: /workspace
+        - name: jenkins-workspace
+          mountPath: /home/jenkins/agent/workspace
+    - name: maven
+      image: maven:3.9.9-eclipse-temurin-17
+      command: ["cat"]
+      tty: true
+      volumeMounts:
+        - name: jenkins-workspace
+          mountPath: /home/jenkins/agent/workspace
+    - name: node
+      image: node:20
+      command: ["cat"]
+      tty: true
+      volumeMounts:
+        - name: jenkins-workspace
+          mountPath: /home/jenkins/agent/workspace
     - name: kaniko
-      image: gcr.io/kaniko-project/executor:v1.8.1
-      command:
-        - /kaniko/executor
-      args:
-        - "--context=dir:///workspace/Angular_Spring_Pfe/BankprojetFront"
-        - "--dockerfile=/workspace/Angular_Spring_Pfe/BankprojetFront/Dockerfile"
-        - "--destination=docker.io/mariammseddi12/angular-spring-pfe:latest"
-        - "--skip-tls-verify"
+      image: gcr.io/kaniko-project/executor:v1.8.1 
+        command: - /kaniko/executor
+      tty: true
       volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker/
-        - name: workspace-volume
-          mountPath: /workspace
-      securityContext:
-        runAsUser: 0
-      tty: true
+        - name: jenkins-workspace
+          mountPath: /home/jenkins/agent/workspace
   restartPolicy: Never
 """
     }
   }
 
-
   environment {
-    DOCKER_REGISTRY = 'mariammseddi12'
+    DOCKER_REGISTRY = 'docker.io/mariammseddi12'
     K8S_NAMESPACE = 'default'
     MAVEN_COMPILER_VERSION = '-Dmaven.compiler.plugin.version=3.11.0'
   }
 
   stages {
+
     stage('Checkout Code') {
       steps {
         git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
@@ -107,31 +113,118 @@ spec:
       }
     }
 
-    stage('Build & Push Docker Images (Kaniko)') {
+    stage('Build & Push Docker Images') {
       parallel {
         stage('Eureka Image') {
-          steps { container('kaniko') { dir('EurekaCompain') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/eureka-server:latest --skip-tls-verify" } } }
+          steps {
+            container('kaniko') {
+              sh """
+                /kaniko/executor \
+                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/EurekaCompain \
+                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/EurekaCompain/Dockerfile \
+                  --destination=${DOCKER_REGISTRY}/eureka-server:latest \
+                  --skip-tls-verify
+              """
+            }
+          }
         }
+
         stage('Gateway Image') {
-          steps { container('kaniko') { dir('Gatway') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/gateway-service:latest --skip-tls-verify" } } }
+          steps {
+            container('kaniko') {
+              sh """
+                /kaniko/executor \
+                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Gatway \
+                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Gatway/Dockerfile \
+                  --destination=${DOCKER_REGISTRY}/gateway-service:latest \
+                  --skip-tls-verify
+              """
+            }
+          }
         }
+
         stage('Compain Image') {
-          steps { container('kaniko') { dir('ProjetCompain') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/compain-service:latest --skip-tls-verify" } } }
+          steps {
+            container('kaniko') {
+              sh """
+                /kaniko/executor \
+                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/ProjetCompain \
+                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/ProjetCompain/Dockerfile \
+                  --destination=${DOCKER_REGISTRY}/compain-service:latest \
+                  --skip-tls-verify
+              """
+            }
+          }
         }
+
         stage('Facturation Image') {
-          steps { container('kaniko') { dir('Facturation') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/facturation-service:latest --skip-tls-verify" } } }
+          steps {
+            container('kaniko') {
+              sh """
+                /kaniko/executor \
+                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Facturation \
+                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Facturation/Dockerfile \
+                  --destination=${DOCKER_REGISTRY}/facturation-service:latest \
+                  --skip-tls-verify
+              """
+            }
+          }
         }
+
         stage('Depense Image') {
-          steps { container('kaniko') { dir('Depense') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/depense-service:latest --skip-tls-verify" } } }
+          steps {
+            container('kaniko') {
+              sh """
+                /kaniko/executor \
+                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Depense \
+                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Depense/Dockerfile \
+                  --destination=${DOCKER_REGISTRY}/depense-service:latest \
+                  --skip-tls-verify
+              """
+            }
+          }
         }
+
         stage('Bank Image') {
-          steps { container('kaniko') { dir('BanqueService') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/bank-service:latest --skip-tls-verify" } } }
+          steps {
+            container('kaniko') {
+              sh """
+                /kaniko/executor \
+                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/BanqueService \
+                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/BanqueService/Dockerfile \
+                  --destination=${DOCKER_REGISTRY}/bank-service:latest \
+                  --skip-tls-verify
+              """
+            }
+          }
         }
+
         stage('ReglementAffectation Image') {
-          steps { container('kaniko') { dir('ReglementAffectation') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/reglementaffectation-service:latest --skip-tls-verify" } } }
+          steps {
+            container('kaniko') {
+              sh """
+                /kaniko/executor \
+                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/ReglementAffectation \
+                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/ReglementAffectation/Dockerfile \
+                  --destination=${DOCKER_REGISTRY}/reglementaffectation-service:latest \
+                  --skip-tls-verify
+              """
+            }
+          }
         }
+
         stage('Angular Image') {
-          steps { container('kaniko') { dir('BankprojetFront') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/angular-frontend:latest --skip-tls-verify" } } }
+          steps {
+            container('kaniko') {
+              sh """
+                /kaniko/executor \
+                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/BankprojetFront \
+                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/BankprojetFront/Dockerfile \
+                  --destination=${DOCKER_REGISTRY}/angular-frontend:latest \
+                  --skip-tls-verify
+              """
+            }
+          }
         }
       }
     }
@@ -142,15 +235,7 @@ spec:
           withKubeConfig([credentialsId: 'kubernetes-credentials-id']) {
             sh """
               kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
-              kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
-              sleep 10
-              kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
-              kubectl apply -f kubernetes/compain-service.yaml -n ${K8S_NAMESPACE}
-              kubectl apply -f kubernetes/facturation-service.yaml -n ${K8S_NAMESPACE}
-              kubectl apply -f kubernetes/depense-service.yaml -n ${K8S_NAMESPACE}
-              kubectl apply -f kubernetes/bank-service.yaml -n ${K8S_NAMESPACE}
-              kubectl apply -f kubernetes/reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
-              kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
+              kubectl apply -f kubernetes/ -n ${K8S_NAMESPACE}
             """
             def services = [
               'eureka-server','gateway-service','compain-service',
