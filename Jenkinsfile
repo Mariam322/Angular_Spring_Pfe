@@ -23,15 +23,14 @@ spec:
 
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.8.1
-      command: ["/kaniko/executor"]
-      args: ["--help"]
+      command: ["/busybox/sh", "-c", "while true; do sleep 3600; done"]
       tty: true
       securityContext:
         runAsUser: 0
       volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker/
-
+  restartPolicy: Never
   volumes:
     - name: docker-config
       secret:
@@ -48,7 +47,7 @@ spec:
 
   stages {
 
-    // 🔹 Étape 1 : Checkout du code
+    // 🔹 Étape 1 : Récupération du code
     stage('Checkout Code') {
       steps {
         git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
@@ -109,37 +108,37 @@ spec:
       }
     }
 
-    // 🔹 Étape 4 : Build & Push des images Docker avec Kaniko
+    // 🔹 Étape 4 : Build et Push des images Docker via Kaniko
     stage('Build & Push Docker Images (Kaniko)') {
       parallel {
         stage('Eureka Image') {
-          steps { container('kaniko') { dir('EurekaCompain') { sh "/kaniko/executor --context `pwd` --dockerfile Dockerfile --destination=${DOCKER_REGISTRY}/eureka-server:latest --skip-tls-verify" } } }
+          steps { container('kaniko') { dir('EurekaCompain') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/eureka-server:latest --skip-tls-verify" } } }
         }
         stage('Gateway Image') {
-          steps { container('kaniko') { dir('Gatway') { sh "/kaniko/executor --context `pwd` --dockerfile Dockerfile --destination=${DOCKER_REGISTRY}/gateway-service:latest --skip-tls-verify" } } }
+          steps { container('kaniko') { dir('Gatway') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/gateway-service:latest --skip-tls-verify" } } }
         }
         stage('Compain Image') {
-          steps { container('kaniko') { dir('ProjetCompain') { sh "/kaniko/executor --context `pwd` --dockerfile Dockerfile --destination=${DOCKER_REGISTRY}/compain-service:latest --skip-tls-verify" } } }
+          steps { container('kaniko') { dir('ProjetCompain') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/compain-service:latest --skip-tls-verify" } } }
         }
         stage('Facturation Image') {
-          steps { container('kaniko') { dir('Facturation') { sh "/kaniko/executor --context `pwd` --dockerfile Dockerfile --destination=${DOCKER_REGISTRY}/facturation-service:latest --skip-tls-verify" } } }
+          steps { container('kaniko') { dir('Facturation') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/facturation-service:latest --skip-tls-verify" } } }
         }
         stage('Depense Image') {
-          steps { container('kaniko') { dir('Depense') { sh "/kaniko/executor --context `pwd` --dockerfile Dockerfile --destination=${DOCKER_REGISTRY}/depense-service:latest --skip-tls-verify" } } }
+          steps { container('kaniko') { dir('Depense') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/depense-service:latest --skip-tls-verify" } } }
         }
         stage('Bank Image') {
-          steps { container('kaniko') { dir('BanqueService') { sh "/kaniko/executor --context `pwd` --dockerfile Dockerfile --destination=${DOCKER_REGISTRY}/bank-service:latest --skip-tls-verify" } } }
+          steps { container('kaniko') { dir('BanqueService') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/bank-service:latest --skip-tls-verify" } } }
         }
         stage('ReglementAffectation Image') {
-          steps { container('kaniko') { dir('ReglementAffectation') { sh "/kaniko/executor --context `pwd` --dockerfile Dockerfile --destination=${DOCKER_REGISTRY}/reglementaffectation-service:latest --skip-tls-verify" } } }
+          steps { container('kaniko') { dir('ReglementAffectation') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/reglementaffectation-service:latest --skip-tls-verify" } } }
         }
         stage('Angular Image') {
-          steps { container('kaniko') { dir('BankprojetFront') { sh "/kaniko/executor --context `pwd` --dockerfile Dockerfile --destination=${DOCKER_REGISTRY}/angular-frontend:latest --skip-tls-verify" } } }
+          steps { container('kaniko') { dir('BankprojetFront') { sh "/kaniko/executor --context `pwd` --destination=${DOCKER_REGISTRY}/angular-frontend:latest --skip-tls-verify" } } }
         }
       }
     }
 
-    // 🔹 Étape 5 : Déploiement Kubernetes OVH
+    // 🔹 Étape 5 : Déploiement sur le cluster OVH
     stage('Deploy to OVH Kubernetes') {
       steps {
         script {
