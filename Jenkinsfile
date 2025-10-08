@@ -18,7 +18,10 @@ spec:
     tty: true
   - name: kaniko
     image: docker.io/mariammseddi12/kaniko-executor:latest
-    command: ["/bin/sh", "-c", "tail -f /dev/null"]
+    command:
+      - "/kaniko/executor"
+    args:
+      - "--help"
     tty: true
     volumeMounts:
     - name: docker-config
@@ -42,7 +45,6 @@ spec:
     }
 
     stages {
-
         stage('Checkout Code') {
             steps {
                 git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
@@ -86,23 +88,6 @@ spec:
             }
         }
 
-        stage('Vérifier Secret Docker') {
-            steps {
-                container('kaniko') {
-                    sh '''
-                        echo "🔍 Vérification du secret Docker..."
-                        if [ -f /kaniko/.docker/config.json ]; then
-                            echo "✅ Secret Docker monté avec succès."
-                            grep -o '"auths"' /kaniko/.docker/config.json || true
-                        else
-                            echo "❌ ERREUR : secret Docker non monté."
-                            exit 1
-                        fi
-                    '''
-                }
-            }
-        }
-
         stage('Build & Push Docker Images') {
             steps {
                 container('kaniko') {
@@ -130,31 +115,6 @@ spec:
                                       --skip-tls-verify
                                 """
                             }
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Deploy to OVH Kubernetes') {
-            steps {
-                script {
-                    withKubeConfig([credentialsId: 'kubernetes-credentials-id']) {
-                        sh """
-                            echo "🚀 Déploiement dans ${K8S_NAMESPACE}"
-                            kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
-                            for f in kubernetes/*.yaml; do
-                                echo "📦 Déploiement de $f"
-                                kubectl apply -f $f -n ${K8S_NAMESPACE}
-                            done
-                        """
-                        def apps = [
-                            'eureka-server','gateway-service','compain-service',
-                            'facturation-service','depense-service','bank-service',
-                            'reglementaffectation-service','angular-frontend'
-                        ]
-                        apps.each { app ->
-                            sh "kubectl rollout status deployment/${app} -n ${K8S_NAMESPACE} --timeout=300s || true"
                         }
                     }
                 }
