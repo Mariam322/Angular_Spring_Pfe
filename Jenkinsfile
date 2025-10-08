@@ -18,7 +18,7 @@ spec:
     tty: true
   - name: kaniko
     # ✅ Correction ici : image Kaniko officielle depuis Google Container Registry
-    image: gcr.io/kaniko-project/executor:v1.23.2
+    image: gcr.io/kaniko-project/executor:latest
     command: ["sleep", "3600"]
     tty: true
     volumeMounts:
