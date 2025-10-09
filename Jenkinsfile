@@ -178,6 +178,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Gatway/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/gateway-service:latest \
                   --skip-tls-verify
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/terminfo"
               """
             }
           }
@@ -192,6 +193,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/ProjetCompain/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/compain-service:latest \
                   --skip-tls-verify
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/terminfo"
               """
             }
           }
@@ -206,6 +208,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Facturation/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/facturation-service:latest \
                   --skip-tls-verify
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/terminfo"
               """
             }
           }
@@ -220,6 +223,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Depense/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/depense-service:latest \
                   --skip-tls-verify
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/terminfo"
               """
             }
           }
@@ -234,6 +238,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/BanqueService/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/bank-service:latest \
                   --skip-tls-verify
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/terminfo"
               """
             }
           }
@@ -248,6 +253,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/ReglementAffectation/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/reglementaffectation-service:latest \
                   --skip-tls-verify
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/terminfo"
               """
             }
           }
@@ -262,6 +268,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/BankprojetFront/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/angular-frontend:latest \
                   --skip-tls-verify
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/terminfo"
               """
             }
           }
