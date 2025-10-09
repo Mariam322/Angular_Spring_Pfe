@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk-jammy
+FROM amazoncorretto:17-alpine
 
 RUN rm -rf /var/lib/yum/yumdb/* || true
 
