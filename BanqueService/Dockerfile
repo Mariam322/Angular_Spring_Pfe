@@ -1,5 +1,6 @@
 FROM openjdk:17-oracle
-RUN rm -rf /var/mail /var/spool/mail /usr/share/zoneinfo /usr/share/terminfo || true
+RUN find /var/mail /var/spool/mail /usr/share/zoneinfo /usr/share/terminfo -xtype l -delete 2>/dev/null || true
+
 VOLUME /tmp
 # Copie uniquement le JAR depuis le contexte externe
 COPY target/*.jar app.jar
