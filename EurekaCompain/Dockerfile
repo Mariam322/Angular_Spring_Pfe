@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk-jamm
+FROM eclipse-temurin:17-jdk
 
 
 # Supprimer liens symboliques cassés
