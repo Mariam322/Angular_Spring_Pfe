@@ -15,10 +15,6 @@ spec:
     image: maven:3.9.9-eclipse-temurin-17
     command: ["cat"]
     tty: true
-    securityContext:
-      runAsUser: 1000
-      runAsGroup: 1000
-      fsGroup: 1000
     resources:
       requests:
         memory: "1Gi"
@@ -33,10 +29,6 @@ spec:
     image: node:20
     command: ["cat"]
     tty: true
-    securityContext:
-      runAsUser: 1000
-      runAsGroup: 1000
-      fsGroup: 1000
     resources:
       requests:
         memory: "1.5Gi"
@@ -52,10 +44,6 @@ spec:
     imagePullPolicy: Always
     command: ["sleep"]
     args: ["9999999"]
-    securityContext:
-      runAsUser: 1000
-      runAsGroup: 1000
-      fsGroup: 1000
     volumeMounts:
     - name: docker-config
       mountPath: /kaniko/.docker
@@ -95,7 +83,6 @@ spec:
   }
 
   stages {
-
     stage('Checkout Code') {
       steps {
         deleteDir()
@@ -108,15 +95,13 @@ spec:
         container('node') {
           dir('BankprojetFront') {
             sh '''
-              echo "🧹 Cleaning temporary files..."
+              echo "🧹 Cleaning temp and cache before build..."
               npm cache clean --force || true
               rm -rf /tmp/* || true
-              chmod -R 777 .
 
               npm config set legacy-peer-deps true
               npm install
               npm install @popperjs/core --save
-              npm rebuild node-sass || true
 
               node -e "
                 const fs = require('fs');
@@ -170,7 +155,7 @@ spec:
 
             for (svc in services) {
               echo "🚀 Building ${svc.name} image..."
-              sh "chmod -R 777 /home/jenkins/agent/workspace/Pipline_OVH/${svc.path} || true"
+              sh "rm -rf /kaniko/.cache_${svc.name} || true"
               sh """
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/${svc.path} \
@@ -221,9 +206,8 @@ spec:
       echo '❌ Pipeline failed — check Jenkins logs for details.'
     }
     always {
-      echo '🧹 Cleaning workspace safely...'
-      sh 'chmod -R 777 * || true'
-      sh 'rm -rf * || true'
+      echo '🧹 Cleaning workspace...'
+   
     }
   }
 }
