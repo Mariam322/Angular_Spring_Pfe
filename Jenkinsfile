@@ -28,11 +28,11 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "600Mi"
-        cpu: "150m"
+        memory: "1Gi"
+        cpu: "250m"
       limits:
-        memory: "1.5Gi"
-        cpu: "500m"
+        memory: "3Gi"
+        cpu: "800m"
 
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
@@ -86,6 +86,8 @@ spec:
               npm config set legacy-peer-deps true
               npm install
               npm install @popperjs/core --save
+
+              # Supprimer les budgets dans angular.json (optimisation)
               node -e "
                 const fs = require('fs');
                 const config = JSON.parse(fs.readFileSync('angular.json', 'utf8'));
@@ -95,7 +97,9 @@ spec:
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
-              npx ng build --configuration=production --source-map=false
+
+              # Build Angular avec mémoire optimisée
+              node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
         }
