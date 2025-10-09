@@ -31,8 +31,8 @@ spec:
         memory: "2Gi"
         cpu: "300m"
       limits:
-        memory: "4Gi"
-        cpu: "1000m"
+        memory: "6Gi"
+        cpu: "1200m"
 
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
