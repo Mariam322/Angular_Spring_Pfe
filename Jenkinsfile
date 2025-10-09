@@ -11,7 +11,6 @@ spec:
   serviceAccountName: default
   containers:
 
-  # ========================= MAVEN =========================
   - name: maven
     image: maven:3.9.9-eclipse-temurin-17
     command: ["cat"]
@@ -26,7 +25,6 @@ spec:
         cpu: "400m"
         ephemeral-storage: "8Gi"
 
-  # ========================= NODE =========================
   - name: node
     image: node:20
     command: ["cat"]
@@ -41,7 +39,6 @@ spec:
         cpu: "600m"
         ephemeral-storage: "8Gi"
 
-  # ========================= KANIKO =========================
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
     imagePullPolicy: Always
@@ -86,8 +83,6 @@ spec:
   }
 
   stages {
-
-    # ========================= STAGE 1 =========================
     stage('Checkout Code') {
       steps {
         deleteDir()
@@ -95,7 +90,6 @@ spec:
       }
     }
 
-    # ========================= STAGE 2 =========================
     stage('Build Angular Frontend') {
       steps {
         container('node') {
@@ -127,7 +121,6 @@ spec:
       }
     }
 
-    # ========================= STAGE 3 =========================
     stage('Build Java JARs') {
       steps {
         container('maven') {
@@ -145,7 +138,6 @@ spec:
       }
     }
 
-    # ========================= STAGE 4 =========================
     stage('Build & Push Docker Images (Sequential)') {
       steps {
         container('kaniko') {
@@ -182,7 +174,6 @@ spec:
       }
     }
 
-    # ========================= STAGE 5 =========================
     stage('Deploy to OVH Kubernetes') {
       steps {
         script {
@@ -207,7 +198,6 @@ spec:
     }
   }
 
-  # ========================= POST ACTIONS =========================
   post {
     success {
       echo '✅ Pipeline completed successfully (Build + Push + Deploy)'
@@ -217,7 +207,7 @@ spec:
     }
     always {
       echo '🧹 Cleaning workspace...'
-
+      deleteDir()
     }
   }
 }
