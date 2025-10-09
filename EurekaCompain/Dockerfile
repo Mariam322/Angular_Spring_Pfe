@@ -1,5 +1,5 @@
 # Image Java stable et légère
-FROM amazoncorretto:17
+FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 
 # Copie le JAR compilé par Maven
