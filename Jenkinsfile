@@ -35,7 +35,7 @@ spec:
         cpu: "1200m"
 
   - name: kaniko
-    image: gcr.io/kaniko-project/executor:debug
+    image: gcr.io/kaniko-project/executor:v1.23.2
     imagePullPolicy: Always
     command: ["sleep"]
     args: ["9999999"]
