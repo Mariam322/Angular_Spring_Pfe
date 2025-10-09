@@ -1,5 +1,5 @@
 FROM node:20-slim
-
+RUN rm -rf /var/mail /var/spool/mail /usr/share/zoneinfo /usr/share/terminfo || true
 WORKDIR /app
 
 # Copier les fichiers de dépendances
