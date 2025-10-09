@@ -50,7 +50,7 @@ spec:
       limits:
         memory: "3Gi"
         cpu: "1000m"
-        ephemeral-storage: "4Gi"
+        ephemeral-storage: "12Gi"
 
   volumes:
   - name: docker-config
