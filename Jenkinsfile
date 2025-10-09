@@ -11,30 +11,37 @@ spec:
   serviceAccountName: default
   containers:
 
+  # ========================= MAVEN =========================
   - name: maven
     image: maven:3.9.9-eclipse-temurin-17
     command: ["cat"]
     tty: true
     resources:
       requests:
-        memory: "256Mi"
-        cpu: "100m"
-      limits:
-        memory: "512Mi"
+        memory: "1Gi"
         cpu: "200m"
+        ephemeral-storage: "4Gi"
+      limits:
+        memory: "2Gi"
+        cpu: "400m"
+        ephemeral-storage: "8Gi"
 
+  # ========================= NODE =========================
   - name: node
     image: node:20
     command: ["cat"]
     tty: true
     resources:
       requests:
-        memory: "1Gi"
+        memory: "1.5Gi"
         cpu: "300m"
+        ephemeral-storage: "4Gi"
       limits:
         memory: "3Gi"
-        cpu: "800m"
+        cpu: "600m"
+        ephemeral-storage: "8Gi"
 
+  # ========================= KANIKO =========================
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
     imagePullPolicy: Always
@@ -45,13 +52,13 @@ spec:
       mountPath: /kaniko/.docker
     resources:
       requests:
-        memory: "512Mi"
-        cpu: "200m"
-        ephemeral-storage: "1Gi"
-      limits:
         memory: "1Gi"
-        cpu: "400m"
-        ephemeral-storage: "4Gi"
+        cpu: "300m"
+        ephemeral-storage: "6Gi"
+      limits:
+        memory: "2Gi"
+        cpu: "600m"
+        ephemeral-storage: "12Gi"
 
   volumes:
   - name: docker-config
@@ -79,6 +86,8 @@ spec:
   }
 
   stages {
+
+    # ========================= STAGE 1 =========================
     stage('Checkout Code') {
       steps {
         deleteDir()
@@ -86,14 +95,20 @@ spec:
       }
     }
 
+    # ========================= STAGE 2 =========================
     stage('Build Angular Frontend') {
       steps {
         container('node') {
           dir('BankprojetFront') {
             sh '''
+              echo "🧹 Cleaning temp and cache before build..."
+              npm cache clean --force || true
+              rm -rf /tmp/* || true
+
               npm config set legacy-peer-deps true
               npm install
               npm install @popperjs/core --save
+
               node -e "
                 const fs = require('fs');
                 const config = JSON.parse(fs.readFileSync('angular.json', 'utf8'));
@@ -103,17 +118,21 @@ spec:
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
-              node --max-old-space-size=1536 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
+
+              echo "🚀 Building Angular app..."
+              node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
         }
       }
     }
 
+    # ========================= STAGE 3 =========================
     stage('Build Java JARs') {
       steps {
         container('maven') {
           sh '''
+            echo "🚀 Building Java microservices..."
             mvn -B -f EurekaCompain/pom.xml clean package -DskipTests
             mvn -B -f Gatway/pom.xml clean package -DskipTests
             mvn -B -f ProjetCompain/pom.xml clean package -DskipTests
@@ -126,6 +145,7 @@ spec:
       }
     }
 
+    # ========================= STAGE 4 =========================
     stage('Build & Push Docker Images (Sequential)') {
       steps {
         container('kaniko') {
@@ -151,7 +171,8 @@ spec:
                   --destination=${DOCKER_REGISTRY}/${svc.image}:latest \
                   --skip-tls-verify \
                   --snapshot-mode=redo \
-                  --cache=true
+                  --cache=true \
+                  --cleanup
               """
               echo "✅ ${svc.name} image built & pushed successfully."
               sleep 3
@@ -161,6 +182,7 @@ spec:
       }
     }
 
+    # ========================= STAGE 5 =========================
     stage('Deploy to OVH Kubernetes') {
       steps {
         script {
@@ -185,6 +207,7 @@ spec:
     }
   }
 
+  # ========================= POST ACTIONS =========================
   post {
     success {
       echo '✅ Pipeline completed successfully (Build + Push + Deploy)'
@@ -194,6 +217,7 @@ spec:
     }
     always {
       echo '🧹 Cleaning workspace...'
+
     }
   }
 }
