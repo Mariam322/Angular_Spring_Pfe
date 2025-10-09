@@ -1,8 +1,9 @@
+# Image Java stable et légère
 FROM amazoncorretto:17
+WORKDIR /app
 
-
-
-VOLUME /tmp
-# Copie uniquement le JAR depuis le contexte externe
+# Copie le JAR compilé par Maven
 COPY target/*.jar app.jar
-ENTRYPOINT ["java","-jar", "app.jar"]
+
+# Commande d'exécution
+ENTRYPOINT ["java", "-jar", "app.jar"]
