@@ -1,4 +1,6 @@
 FROM node:20-alpine
+# Installer Python et Make pour node-gyp
+RUN apk add --no-cache python3 make g++
 WORKDIR /app
 
 # Copier les fichiers de dépendances
