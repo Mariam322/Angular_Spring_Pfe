@@ -44,11 +44,11 @@ spec:
       mountPath: /kaniko/.docker
     resources:
       requests:
-        memory: "1Gi"
-        cpu: "250m"
+        memory: "2Gi"
+        cpu: "300m"
       limits:
-        memory: "3Gi"
-        cpu: "800m"
+        memory: "4Gi"
+        cpu: "1000m"
 
   volumes:
   - name: docker-config
@@ -86,8 +86,6 @@ spec:
               npm config set legacy-peer-deps true
               npm install
               npm install @popperjs/core --save
-
-              # Supprimer les budgets dans angular.json (optimisation)
               node -e "
                 const fs = require('fs');
                 const config = JSON.parse(fs.readFileSync('angular.json', 'utf8'));
@@ -97,8 +95,6 @@ spec:
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
-
-              # Build Angular avec mémoire optimisée
               node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
@@ -134,7 +130,7 @@ spec:
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/EurekaCompain \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/EurekaCompain/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/eureka-server:latest \
-                  --skip-tls-verify
+                  --skip-tls-verify \
                   --snapshot-mode=redo
               """
             }
@@ -150,7 +146,7 @@ spec:
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Gatway \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Gatway/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/gateway-service:latest \
-                  --skip-tls-verify
+                  --skip-tls-verify \
                   --snapshot-mode=redo
               """
             }
@@ -166,7 +162,7 @@ spec:
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/ProjetCompain \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/ProjetCompain/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/compain-service:latest \
-                  --skip-tls-verify
+                  --skip-tls-verify \
                   --snapshot-mode=redo
               """
             }
@@ -182,7 +178,7 @@ spec:
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Facturation \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Facturation/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/facturation-service:latest \
-                  --skip-tls-verify
+                  --skip-tls-verify \
                   --snapshot-mode=redo
               """
             }
@@ -198,7 +194,7 @@ spec:
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Depense \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Depense/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/depense-service:latest \
-                  --skip-tls-verify
+                  --skip-tls-verify \
                   --snapshot-mode=redo
               """
             }
@@ -214,7 +210,7 @@ spec:
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/BanqueService \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/BanqueService/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/bank-service:latest \
-                  --skip-tls-verify
+                  --skip-tls-verify \
                   --snapshot-mode=redo
               """
             }
@@ -230,7 +226,7 @@ spec:
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/ReglementAffectation \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/ReglementAffectation/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/reglementaffectation-service:latest \
-                  --skip-tls-verify
+                  --skip-tls-verify \
                   --snapshot-mode=redo
               """
             }
@@ -245,7 +241,7 @@ spec:
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/BankprojetFront \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/BankprojetFront/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/angular-frontend:latest \
-                  --skip-tls-verify
+                  --skip-tls-verify \
                   --snapshot-mode=redo
               """
             }
