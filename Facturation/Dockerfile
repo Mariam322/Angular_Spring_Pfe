@@ -1,9 +1,4 @@
-# Image Java stable et légère
-FROM amazoncorretto:17
+FROM eclipse-temurin:17-jdk
 WORKDIR /app
-
-# Copie le JAR compilé par Maven
 COPY target/*.jar app.jar
-
-# Commande d'exécution
 ENTRYPOINT ["java", "-jar", "app.jar"]
