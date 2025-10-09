@@ -1,9 +1,4 @@
-FROM eclipse-temurin:17-jdk
-
-RUN rm -rf /var/lib/yum/yumdb/* || true
-
+FROM openjdk:17-jdk-slim
 WORKDIR /app
 COPY target/*.jar app.jar
-# Supprime les métadonnées Maven et autres fichiers inutiles si tu les copies
-RUN rm -rf /root/.m2 || true
 ENTRYPOINT ["java", "-jar", "app.jar"]
