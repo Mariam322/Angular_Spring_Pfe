@@ -35,13 +35,10 @@ spec:
         cpu: "1200m"
 
   - name: kaniko
-    image: gcr.io/kaniko-project/executor:v1.23.2
+    image: anjia0532/kaniko-project.executor:v1.23.2-debug
     imagePullPolicy: Always
-    command:
-      - /busybox/sh
-    args:
-      - -c
-      - while true; do sleep 3600; done
+    command: ["sleep"]
+    args: ["9999999"]
     volumeMounts:
       - name: docker-config
         mountPath: /kaniko/.docker
@@ -74,14 +71,14 @@ spec:
 
   stages {
 
-    /* 🔹 1. Cloner le code */
+    /* 🔹 Étape 1 : Checkout du code */
     stage('Checkout Code') {
       steps {
         git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
       }
     }
 
-    /* 🔹 2. Build Angular */
+    /* 🔹 Étape 2 : Build Angular */
     stage('Build Angular Frontend') {
       steps {
         container('node') {
@@ -91,7 +88,7 @@ spec:
               npm install
               npm install @popperjs/core --save
 
-              # Supprimer les budgets Angular pour éviter les erreurs
+              # Supprimer les budgets Angular (pour éviter les erreurs build)
               node -e "
                 const fs = require('fs');
                 const config = JSON.parse(fs.readFileSync('angular.json', 'utf8'));
@@ -102,7 +99,7 @@ spec:
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
 
-              # Build optimisé
+              # Build optimisé Angular
               node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
@@ -110,7 +107,7 @@ spec:
       }
     }
 
-    /* 🔹 3. Build Java */
+    /* 🔹 Étape 3 : Build des JARs Java */
     stage('Build Java JARs') {
       steps {
         container('maven') {
@@ -127,14 +124,13 @@ spec:
       }
     }
 
-    /* 🔹 4. Build & Push Docker Images */
+    /* 🔹 Étape 4 : Build & Push Docker images */
     stage('Build & Push Docker Images') {
       parallel {
 
         stage('Eureka Image') {
           steps {
             container('kaniko') {
-              sh 'rm -rf /kaniko/.cache_Eureka || true'
               sh '''
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/EurekaCompain \
@@ -153,7 +149,6 @@ spec:
         stage('Gateway Image') {
           steps {
             container('kaniko') {
-              sh 'rm -rf /kaniko/.cache_Gateway || true'
               sh '''
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Gatway \
@@ -172,7 +167,6 @@ spec:
         stage('Compain Image') {
           steps {
             container('kaniko') {
-              sh 'rm -rf /kaniko/.cache_Compain || true'
               sh '''
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/ProjetCompain \
@@ -191,7 +185,6 @@ spec:
         stage('Facturation Image') {
           steps {
             container('kaniko') {
-              sh 'rm -rf /kaniko/.cache_Facturation || true'
               sh '''
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Facturation \
@@ -210,7 +203,6 @@ spec:
         stage('Depense Image') {
           steps {
             container('kaniko') {
-              sh 'rm -rf /kaniko/.cache_Depense || true'
               sh '''
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Depense \
@@ -229,7 +221,6 @@ spec:
         stage('Bank Image') {
           steps {
             container('kaniko') {
-              sh 'rm -rf /kaniko/.cache_Bank || true'
               sh '''
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/BanqueService \
@@ -248,7 +239,6 @@ spec:
         stage('ReglementAffectation Image') {
           steps {
             container('kaniko') {
-              sh 'rm -rf /kaniko/.cache_Reglement || true'
               sh '''
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/ReglementAffectation \
@@ -284,7 +274,7 @@ spec:
       }
     }
 
-    /* 🔹 5. Déploiement Kubernetes */
+    /* 🔹 Étape 5 : Déploiement Kubernetes */
     stage('Deploy to OVH Kubernetes') {
       steps {
         script {
