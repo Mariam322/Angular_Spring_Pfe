@@ -81,7 +81,7 @@ spec:
 
     stage('Checkout Code') {
       steps {
-        cleanWs()
+        deleteDir()
         git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
       }
     }
@@ -194,7 +194,7 @@ spec:
     }
     always {
       echo '🧹 Cleaning workspace...'
-      cleanWs()
+      deleteDir()
     }
   }
 }
