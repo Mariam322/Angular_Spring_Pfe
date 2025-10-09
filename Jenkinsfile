@@ -37,11 +37,14 @@ spec:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:v1.23.2
     imagePullPolicy: Always
-    command: ["sleep"]
-    args: ["9999999"]
+    command:
+      - /busybox/sh
+    args:
+      - -c
+      - while true; do sleep 3600; done
     volumeMounts:
-    - name: docker-config
-      mountPath: /kaniko/.docker
+      - name: docker-config
+        mountPath: /kaniko/.docker
     resources:
       requests:
         memory: "2Gi"
@@ -54,11 +57,11 @@ spec:
   - name: docker-config
     projected:
       sources:
-      - secret:
-          name: regcred
-          items:
-          - key: .dockerconfigjson
-            path: config.json
+        - secret:
+            name: regcred
+            items:
+              - key: .dockerconfigjson
+                path: config.json
   restartPolicy: Never
 """
     }
@@ -67,17 +70,18 @@ spec:
   environment {
     DOCKER_REGISTRY = 'docker.io/mariammseddi12'
     K8S_NAMESPACE = 'default'
-    MAVEN_COMPILER_VERSION = '-Dmaven.compiler.plugin.version=3.11.0'
   }
 
   stages {
 
+    /* 🔹 1. Cloner le code */
     stage('Checkout Code') {
       steps {
         git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
       }
     }
 
+    /* 🔹 2. Build Angular */
     stage('Build Angular Frontend') {
       steps {
         container('node') {
@@ -86,6 +90,8 @@ spec:
               npm config set legacy-peer-deps true
               npm install
               npm install @popperjs/core --save
+
+              # Supprimer les budgets Angular pour éviter les erreurs
               node -e "
                 const fs = require('fs');
                 const config = JSON.parse(fs.readFileSync('angular.json', 'utf8'));
@@ -95,6 +101,8 @@ spec:
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
+
+              # Build optimisé
               node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
@@ -102,6 +110,7 @@ spec:
       }
     }
 
+    /* 🔹 3. Build Java */
     stage('Build Java JARs') {
       steps {
         container('maven') {
@@ -118,6 +127,7 @@ spec:
       }
     }
 
+    /* 🔹 4. Build & Push Docker Images */
     stage('Build & Push Docker Images') {
       parallel {
 
@@ -125,14 +135,17 @@ spec:
           steps {
             container('kaniko') {
               sh 'rm -rf /kaniko/.cache_Eureka || true'
-              sh """
+              sh '''
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/EurekaCompain \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/EurekaCompain/Dockerfile \
-                  --destination=${DOCKER_REGISTRY}/eureka-server:latest \
+                  --destination=docker.io/mariammseddi12/eureka-server:latest \
                   --skip-tls-verify \
-                  --snapshot-mode=redo
-              """
+                  --snapshot-mode=redo \
+                  --use-new-run \
+                  --single-snapshot \
+                  --no-push-cache
+              '''
             }
           }
         }
@@ -141,14 +154,17 @@ spec:
           steps {
             container('kaniko') {
               sh 'rm -rf /kaniko/.cache_Gateway || true'
-              sh """
+              sh '''
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Gatway \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Gatway/Dockerfile \
-                  --destination=${DOCKER_REGISTRY}/gateway-service:latest \
+                  --destination=docker.io/mariammseddi12/gateway-service:latest \
                   --skip-tls-verify \
-                  --snapshot-mode=redo
-              """
+                  --snapshot-mode=redo \
+                  --use-new-run \
+                  --single-snapshot \
+                  --no-push-cache
+              '''
             }
           }
         }
@@ -157,14 +173,17 @@ spec:
           steps {
             container('kaniko') {
               sh 'rm -rf /kaniko/.cache_Compain || true'
-              sh """
+              sh '''
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/ProjetCompain \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/ProjetCompain/Dockerfile \
-                  --destination=${DOCKER_REGISTRY}/compain-service:latest \
+                  --destination=docker.io/mariammseddi12/compain-service:latest \
                   --skip-tls-verify \
-                  --snapshot-mode=redo
-              """
+                  --snapshot-mode=redo \
+                  --use-new-run \
+                  --single-snapshot \
+                  --no-push-cache
+              '''
             }
           }
         }
@@ -173,14 +192,17 @@ spec:
           steps {
             container('kaniko') {
               sh 'rm -rf /kaniko/.cache_Facturation || true'
-              sh """
+              sh '''
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Facturation \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Facturation/Dockerfile \
-                  --destination=${DOCKER_REGISTRY}/facturation-service:latest \
+                  --destination=docker.io/mariammseddi12/facturation-service:latest \
                   --skip-tls-verify \
-                  --snapshot-mode=redo
-              """
+                  --snapshot-mode=redo \
+                  --use-new-run \
+                  --single-snapshot \
+                  --no-push-cache
+              '''
             }
           }
         }
@@ -189,14 +211,17 @@ spec:
           steps {
             container('kaniko') {
               sh 'rm -rf /kaniko/.cache_Depense || true'
-              sh """
+              sh '''
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Depense \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Depense/Dockerfile \
-                  --destination=${DOCKER_REGISTRY}/depense-service:latest \
+                  --destination=docker.io/mariammseddi12/depense-service:latest \
                   --skip-tls-verify \
-                  --snapshot-mode=redo
-              """
+                  --snapshot-mode=redo \
+                  --use-new-run \
+                  --single-snapshot \
+                  --no-push-cache
+              '''
             }
           }
         }
@@ -205,14 +230,17 @@ spec:
           steps {
             container('kaniko') {
               sh 'rm -rf /kaniko/.cache_Bank || true'
-              sh """
+              sh '''
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/BanqueService \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/BanqueService/Dockerfile \
-                  --destination=${DOCKER_REGISTRY}/bank-service:latest \
+                  --destination=docker.io/mariammseddi12/bank-service:latest \
                   --skip-tls-verify \
-                  --snapshot-mode=redo
-              """
+                  --snapshot-mode=redo \
+                  --use-new-run \
+                  --single-snapshot \
+                  --no-push-cache
+              '''
             }
           }
         }
@@ -221,14 +249,17 @@ spec:
           steps {
             container('kaniko') {
               sh 'rm -rf /kaniko/.cache_Reglement || true'
-              sh """
+              sh '''
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/ReglementAffectation \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/ReglementAffectation/Dockerfile \
-                  --destination=${DOCKER_REGISTRY}/reglementaffectation-service:latest \
+                  --destination=docker.io/mariammseddi12/reglementaffectation-service:latest \
                   --skip-tls-verify \
-                  --snapshot-mode=redo
-              """
+                  --snapshot-mode=redo \
+                  --use-new-run \
+                  --single-snapshot \
+                  --no-push-cache
+              '''
             }
           }
         }
@@ -236,20 +267,24 @@ spec:
         stage('Angular Image') {
           steps {
             container('kaniko') {
-              sh """
+              sh '''
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/BankprojetFront \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/BankprojetFront/Dockerfile \
-                  --destination=${DOCKER_REGISTRY}/angular-frontend:latest \
+                  --destination=docker.io/mariammseddi12/angular-frontend:latest \
                   --skip-tls-verify \
-                  --snapshot-mode=redo
-              """
+                  --snapshot-mode=redo \
+                  --use-new-run \
+                  --single-snapshot \
+                  --no-push-cache
+              '''
             }
           }
         }
       }
     }
 
+    /* 🔹 5. Déploiement Kubernetes */
     stage('Deploy to OVH Kubernetes') {
       steps {
         script {
