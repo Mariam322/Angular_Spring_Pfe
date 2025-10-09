@@ -1,5 +1,4 @@
-FROM amazoncorretto:17
-
+FROM eclipse-temurin:17-jdk-jammy
 # 🧹 Nettoyage des fichiers cassés dans yumdb pour éviter les erreurs Kaniko
 RUN rm -rf /var/lib/yum/yumdb/* || true
 
