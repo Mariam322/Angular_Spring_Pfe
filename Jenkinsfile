@@ -100,13 +100,14 @@ spec:
         stage('Eureka Image') {
           steps {
             container('kaniko') {
+              sh 'rm -rf /kaniko/.cache || true'
               sh """
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/EurekaCompain \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/EurekaCompain/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/eureka-server:latest \
                   --skip-tls-verify \
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo,/usr/share/locale
               """
             }
           }
@@ -115,28 +116,31 @@ spec:
         stage('Gateway Image') {
           steps {
             container('kaniko') {
+              sh 'rm -rf /kaniko/.cache || true'
               sh """
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Gatway \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Gatway/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/gateway-service:latest \
                   --skip-tls-verify \
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo,/usr/share/locale
               """
             }
           }
         }
 
         stage('Compain Image') {
+          
           steps {
             container('kaniko') {
+              sh 'rm -rf /kaniko/.cache || true'
               sh """
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/ProjetCompain \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/ProjetCompain/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/compain-service:latest \
                   --skip-tls-verify \
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo,/usr/share/locale
               """
             }
           }
@@ -145,13 +149,14 @@ spec:
         stage('Facturation Image') {
           steps {
             container('kaniko') {
+              sh 'rm -rf /kaniko/.cache || true'
               sh """
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Facturation \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Facturation/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/facturation-service:latest \
                   --skip-tls-verify \
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo,/usr/share/locale
               """
             }
           }
@@ -167,7 +172,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Depense/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/depense-service:latest \
                   --skip-tls-verify \
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo,/usr/share/locale
               """
             }
           }
@@ -183,7 +188,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/BanqueService/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/bank-service:latest \
                   --skip-tls-verify \
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo,/usr/share/locale
               """
             }
           }
@@ -199,7 +204,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/ReglementAffectation/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/reglementaffectation-service:latest \
                   --skip-tls-verify \
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo,/usr/share/locale
               """
             }
           }
