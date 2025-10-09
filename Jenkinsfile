@@ -26,6 +26,8 @@ spec:
     volumeMounts:
     - name: docker-config
       mountPath: /kaniko/.docker
+    - name: kaniko-tmp
+      mountPath: /tmp
   volumes:
   - name: docker-config
     projected:
@@ -35,6 +37,9 @@ spec:
           items:
           - key: .dockerconfigjson
             path: config.json
+  - name: kaniko-tmp
+    emptyDir:
+      sizeLimit: 10Gi
   restartPolicy: Never
 """
     }
@@ -95,131 +100,33 @@ spec:
     }
 
     stage('Build & Push Docker Images') {
-      parallel {
+      steps {
+        container('kaniko') {
+          script {
+            def services = [
+              [path: 'EurekaCompain', image: 'eureka-server'],
+              [path: 'Gatway', image: 'gateway-service'],
+              [path: 'ProjetCompain', image: 'compain-service'],
+              [path: 'Facturation', image: 'facturation-service'],
+              [path: 'Depense', image: 'depense-service'],
+              [path: 'BanqueService', image: 'bank-service'],
+              [path: 'ReglementAffectation', image: 'reglementaffectation-service'],
+              [path: 'BankprojetFront', image: 'angular-frontend']
+            ]
 
-        stage('Eureka Image') {
-          steps {
-            container('kaniko') {
-              sh 'rm -rf /kaniko/.cache_Eureka || true'
+            for (svc in services) {
+              echo "🚀 Building ${svc.image}..."
               sh """
+                rm -rf /kaniko/.cache_${svc.image} || true
                 /kaniko/executor \
-                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/EurekaCompain \
-                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/EurekaCompain/Dockerfile \
-                  --destination=${DOCKER_REGISTRY}/eureka-server:latest \
+                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/${svc.path} \
+                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/${svc.path}/Dockerfile \
+                  --destination=${DOCKER_REGISTRY}/${svc.image}:latest \
+                  --cache-dir=/kaniko/.cache_${svc.image} \
                   --skip-tls-verify \
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo,/usr/share/locale
-              """
-            }
-          }
-        }
-
-        stage('Gateway Image') {
-          steps {
-            container('kaniko') {
-              sh 'rm -rf /kaniko/.cache_Gateway || true'
-              sh """
-                /kaniko/executor \
-                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Gatway \
-                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Gatway/Dockerfile \
-                  --destination=${DOCKER_REGISTRY}/gateway-service:latest \
-                  --skip-tls-verify \
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo,/usr/share/locale
-              """
-            }
-          }
-        }
-
-        stage('Compain Image') {
-          
-          steps {
-            container('kaniko') {
-              sh 'rm -rf /kaniko/.cache_Compain || true'
-              sh """
-                /kaniko/executor \
-                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/ProjetCompain \
-                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/ProjetCompain/Dockerfile \
-                  --destination=${DOCKER_REGISTRY}/compain-service:latest \
-                  --skip-tls-verify \
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo,/usr/share/locale
-              """
-            }
-          }
-        }
-
-        stage('Facturation Image') {
-          steps {
-            container('kaniko') {
-              sh 'rm -rf /kaniko/.cache_Facturation || true'
-              sh """
-                /kaniko/executor \
-                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Facturation \
-                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Facturation/Dockerfile \
-                  --destination=${DOCKER_REGISTRY}/facturation-service:latest \
-                  --skip-tls-verify \
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo,/usr/share/locale
-              """
-            }
-          }
-        }
-
-        stage('Depense Image') {
-          steps {
-            container('kaniko') {
-              sh 'rm -rf /kaniko/.cache_Depense || true'
-              sh """
-                /kaniko/executor \
-                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Depense \
-                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Depense/Dockerfile \
-                  --destination=${DOCKER_REGISTRY}/depense-service:latest \
-                  --skip-tls-verify \
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo,/usr/share/locale
-              """
-            }
-          }
-        }
-
-        stage('Bank Image') {
-          steps {
-            container('kaniko') {
-              sh 'rm -rf /kaniko/.cache_Bank || true'
-              sh """
-                /kaniko/executor \
-                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/BanqueService \
-                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/BanqueService/Dockerfile \
-                  --destination=${DOCKER_REGISTRY}/bank-service:latest \
-                  --skip-tls-verify \
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo,/usr/share/locale
-              """
-            }
-          }
-        }
-
-        stage('ReglementAffectation Image') {
-          steps {
-            container('kaniko') {
-              sh 'rm -rf /kaniko/.cache_Reglement || true'
-              sh """
-                /kaniko/executor \
-                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/ReglementAffectation \
-                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/ReglementAffectation/Dockerfile \
-                  --destination=${DOCKER_REGISTRY}/reglementaffectation-service:latest \
-                  --skip-tls-verify \
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo,/usr/share/locale
-              """
-            }
-          }
-        }
-
-        stage('Angular Image') {
-          steps {
-            container('kaniko') {
-              sh """
-                /kaniko/executor \
-                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/BankprojetFront \
-                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/BankprojetFront/Dockerfile \
-                  --destination=${DOCKER_REGISTRY}/angular-frontend:latest \
-                  --skip-tls-verify \
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo
+                  --use-new-run \
+                  --single-snapshot \
+                  --reproducible
               """
             }
           }
