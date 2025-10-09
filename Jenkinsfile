@@ -194,7 +194,7 @@ spec:
     }
     always {
       echo '🧹 Cleaning workspace...'
-      deleteDir()
+      
     }
   }
 }
