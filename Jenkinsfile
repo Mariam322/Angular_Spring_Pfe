@@ -54,7 +54,7 @@ spec:
         ephemeral-storage: "20Gi"
 
   - name: kubectl
-    image: bitnami/kubectl:latest
+    image: lachlanevenson/k8s-kubectl:v1.29.0
     command: ["sleep"]
     args: ["9999999"]
     tty: true
@@ -183,6 +183,7 @@ spec:
               sh """
                 kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
                 kubectl apply -f kubernetes/ -n ${K8S_NAMESPACE}
+                kubectl get pods -n ${K8S_NAMESPACE} -o wide
               """
               def services = [
                 'eureka-server','gateway-service','compain-service',
