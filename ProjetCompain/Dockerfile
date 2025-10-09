@@ -1,9 +1,9 @@
-# Image Java stable et légère
 FROM amazoncorretto:17
+
+RUN rm -rf /var/lib/yum/yumdb/* || true
+
 WORKDIR /app
-
-# Copie le JAR compilé par Maven
 COPY target/*.jar app.jar
-
-# Commande d'exécution
+# Supprime les métadonnées Maven et autres fichiers inutiles si tu les copies
+RUN rm -rf /root/.m2 || true
 ENTRYPOINT ["java", "-jar", "app.jar"]
