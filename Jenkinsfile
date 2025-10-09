@@ -17,13 +17,11 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "1Gi"
-        cpu: "200m"
-        ephemeral-storage: "4Gi"
+        memory: "256Mi"
+        cpu: "100m"
       limits:
-        memory: "2Gi"
-        cpu: "400m"
-        ephemeral-storage: "8Gi"
+        memory: "512Mi"
+        cpu: "200m"
 
   - name: node
     image: node:20
@@ -31,13 +29,11 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "1.5Gi"
+        memory: "1Gi"
         cpu: "300m"
-        ephemeral-storage: "4Gi"
       limits:
         memory: "3Gi"
-        cpu: "600m"
-        ephemeral-storage: "8Gi"
+        cpu: "800m"
 
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
@@ -51,7 +47,7 @@ spec:
       requests:
         memory: "1Gi"
         cpu: "300m"
-        ephemeral-storage: "6Gi"
+        ephemeral-storage: "1Gi"
       limits:
         memory: "2Gi"
         cpu: "600m"
@@ -95,14 +91,9 @@ spec:
         container('node') {
           dir('BankprojetFront') {
             sh '''
-              echo "🧹 Cleaning temp and cache before build..."
-              npm cache clean --force || true
-              rm -rf /tmp/* || true
-
               npm config set legacy-peer-deps true
               npm install
               npm install @popperjs/core --save
-
               node -e "
                 const fs = require('fs');
                 const config = JSON.parse(fs.readFileSync('angular.json', 'utf8'));
@@ -112,9 +103,7 @@ spec:
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
-
-              echo "🚀 Building Angular app..."
-              node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
+              node --max-old-space-size=1536 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
         }
@@ -125,7 +114,6 @@ spec:
       steps {
         container('maven') {
           sh '''
-            echo "🚀 Building Java microservices..."
             mvn -B -f EurekaCompain/pom.xml clean package -DskipTests
             mvn -B -f Gatway/pom.xml clean package -DskipTests
             mvn -B -f ProjetCompain/pom.xml clean package -DskipTests
@@ -163,8 +151,7 @@ spec:
                   --destination=${DOCKER_REGISTRY}/${svc.image}:latest \
                   --skip-tls-verify \
                   --snapshot-mode=redo \
-                  --cache=true \
-                  --cleanup
+                  --cache=true
               """
               echo "✅ ${svc.name} image built & pushed successfully."
               sleep 3
@@ -207,7 +194,6 @@ spec:
     }
     always {
       echo '🧹 Cleaning workspace...'
-   
     }
   }
 }
