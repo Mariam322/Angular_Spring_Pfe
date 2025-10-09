@@ -10,17 +10,18 @@ metadata:
 spec:
   serviceAccountName: default
   containers:
+
   - name: maven
     image: maven:3.9.9-eclipse-temurin-17
     command: ["cat"]
     tty: true
     resources:
       requests:
-        memory: "400Mi"
+        memory: "256Mi"
         cpu: "100m"
       limits:
-        memory: "1Gi"
-        cpu: "400m"
+        memory: "512Mi"
+        cpu: "200m"
 
   - name: node
     image: node:20
@@ -28,11 +29,11 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "1.5Gi"
-        cpu: "300m"
+        memory: "512Mi"
+        cpu: "200m"
       limits:
-        memory: "3Gi"
-        cpu: "1000m"
+        memory: "1Gi"
+        cpu: "400m"
 
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
@@ -44,13 +45,13 @@ spec:
       mountPath: /kaniko/.docker
     resources:
       requests:
-        memory: "1.5Gi"
-        cpu: "300m"
-        ephemeral-storage: "2Gi"
+        memory: "512Mi"
+        cpu: "200m"
+        ephemeral-storage: "1Gi"
       limits:
-        memory: "3Gi"
-        cpu: "1000m"
-        ephemeral-storage: "12Gi"
+        memory: "1Gi"
+        cpu: "400m"
+        ephemeral-storage: "4Gi"
 
   volumes:
   - name: docker-config
@@ -78,7 +79,6 @@ spec:
   }
 
   stages {
-
     stage('Checkout Code') {
       steps {
         deleteDir()
@@ -103,7 +103,7 @@ spec:
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
-              node --max-old-space-size=1536 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
+              node --max-old-space-size=1024 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
         }
@@ -194,7 +194,6 @@ spec:
     }
     always {
       echo '🧹 Cleaning workspace...'
-      
     }
   }
 }
