@@ -100,7 +100,7 @@ spec:
         stage('Eureka Image') {
           steps {
             container('kaniko') {
-              sh 'rm -rf /kaniko/.cache || true'
+              sh 'rm -rf /kaniko/.cache_Eureka || true'
               sh """
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/EurekaCompain \
@@ -116,7 +116,7 @@ spec:
         stage('Gateway Image') {
           steps {
             container('kaniko') {
-              sh 'rm -rf /kaniko/.cache || true'
+              sh 'rm -rf /kaniko/.cache_Gateway || true'
               sh """
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Gatway \
@@ -133,7 +133,7 @@ spec:
           
           steps {
             container('kaniko') {
-              sh 'rm -rf /kaniko/.cache || true'
+              sh 'rm -rf /kaniko/.cache_Compain || true'
               sh """
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/ProjetCompain \
@@ -149,7 +149,7 @@ spec:
         stage('Facturation Image') {
           steps {
             container('kaniko') {
-              sh 'rm -rf /kaniko/.cache || true'
+              sh 'rm -rf /kaniko/.cache_Facturation || true'
               sh """
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Facturation \
@@ -165,7 +165,7 @@ spec:
         stage('Depense Image') {
           steps {
             container('kaniko') {
-              sh 'rm -rf /kaniko/.cache || true'
+              sh 'rm -rf /kaniko/.cache_Depense || true'
               sh """
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Depense \
@@ -181,7 +181,7 @@ spec:
         stage('Bank Image') {
           steps {
             container('kaniko') {
-              sh 'rm -rf /kaniko/.cache || true'
+              sh 'rm -rf /kaniko/.cache_Bank || true'
               sh """
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/BanqueService \
@@ -197,7 +197,7 @@ spec:
         stage('ReglementAffectation Image') {
           steps {
             container('kaniko') {
-              sh 'rm -rf /kaniko/.cache || true'
+              sh 'rm -rf /kaniko/.cache_Reglement || true'
               sh """
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/ReglementAffectation \
