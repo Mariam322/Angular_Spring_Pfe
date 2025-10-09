@@ -28,11 +28,11 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "2Gi"
+        memory: "1.5Gi"
         cpu: "300m"
       limits:
-        memory: "6Gi"
-        cpu: "1200m"
+        memory: "3Gi"
+        cpu: "1000m"
 
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
@@ -44,13 +44,13 @@ spec:
       mountPath: /kaniko/.docker
     resources:
       requests:
-        memory: "3Gi"
-        cpu: "400m"
-        ephemeral-storage: "3Gi"
+        memory: "1.5Gi"
+        cpu: "300m"
+        ephemeral-storage: "2Gi"
       limits:
-        memory: "6Gi"
-        cpu: "1500m"
-        ephemeral-storage: "8Gi"
+        memory: "3Gi"
+        cpu: "1000m"
+        ephemeral-storage: "4Gi"
 
   volumes:
   - name: docker-config
@@ -103,7 +103,7 @@ spec:
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
-              node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
+              node --max-old-space-size=1536 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
         }
