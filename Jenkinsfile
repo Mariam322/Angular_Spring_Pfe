@@ -6,50 +6,35 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    app: full-pipeline
+    app: kaniko-pipeline
 spec:
   serviceAccountName: default
-  volumes:
-    - name: docker-config
-      secret:
-        secretName: regcred
-    - name: jenkins-workspace
-      emptyDir: {}
-
   containers:
-    - name: jnlp
-      image: jenkins/inbound-agent:latest
-      volumeMounts:
-        - name: jenkins-workspace
-          mountPath: /home/jenkins/agent/workspace
-
-    - name: maven
-      image: maven:3.9.9-eclipse-temurin-17
-      command: ["cat"]
-      tty: true
-      volumeMounts:
-        - name: jenkins-workspace
-          mountPath: /home/jenkins/agent/workspace
-
-    - name: node
-      image: node:20
-      command: ["cat"]
-      tty: true
-      volumeMounts:
-        - name: jenkins-workspace
-          mountPath: /home/jenkins/agent/workspace
-
-    - name: kaniko
-      image: gcr.io/kaniko-project/executor:debug
-      command: ["/busybox/sh", "-c", "while true; do sleep 3600; done"]
-      
-      tty: true
-      volumeMounts:
-        - name: docker-config
-          mountPath: /kaniko/.docker/
-        - name: jenkins-workspace
-          mountPath: /home/jenkins/agent/workspace
-
+  - name: maven
+    image: maven:3.9.9-eclipse-temurin-17
+    command: ["cat"]
+    tty: true
+  - name: node
+    image: node:20
+    command: ["cat"]
+    tty: true
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    imagePullPolicy: Always
+    command: ["sleep"]
+    args: ["9999999"]
+    volumeMounts:
+    - name: docker-config
+      mountPath: /kaniko/.docker
+  volumes:
+  - name: docker-config
+    projected:
+      sources:
+      - secret:
+          name: docker-credentials
+          items:
+          - key: .dockerconfigjson
+            path: config.json
   restartPolicy: Never
 """
     }
