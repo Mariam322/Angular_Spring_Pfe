@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk
+FROM amazoncorretto:17
 
 
 # Supprimer liens symboliques cassés
