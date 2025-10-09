@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk-jamm
+FROM eclipse-temurin:17-jdk
 
 # Supprimer liens symboliques cassés
 RUN find /var/mail /var/spool/mail /usr/share/zoneinfo /usr/share/terminfo -xtype l -delete 2>/dev/null || true
