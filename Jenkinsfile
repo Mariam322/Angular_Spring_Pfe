@@ -45,11 +45,11 @@ spec:
       mountPath: /kaniko/.docker
     resources:
       requests:
-        memory: "4Gi"
+        memory: "2Gi"
         cpu: "500m"
         ephemeral-storage: "10Gi"
       limits:
-        memory: "6Gi"
+        memory: "4Gi"
         cpu: "1000m"
         ephemeral-storage: "20Gi"
 
