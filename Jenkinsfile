@@ -28,11 +28,11 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "1Gi"
-        cpu: "250m"
+        memory: "2Gi"
+        cpu: "300m"
       limits:
-        memory: "3Gi"
-        cpu: "800m"
+        memory: "4Gi"
+        cpu: "1000m"
 
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
@@ -135,6 +135,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/EurekaCompain/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/eureka-server:latest \
                   --skip-tls-verify
+                  --snapshot-mode=redo
               """
             }
           }
@@ -150,6 +151,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Gatway/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/gateway-service:latest \
                   --skip-tls-verify
+                  --snapshot-mode=redo
               """
             }
           }
@@ -165,6 +167,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/ProjetCompain/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/compain-service:latest \
                   --skip-tls-verify
+                  --snapshot-mode=redo
               """
             }
           }
@@ -180,6 +183,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Facturation/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/facturation-service:latest \
                   --skip-tls-verify
+                  --snapshot-mode=redo
               """
             }
           }
@@ -195,6 +199,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Depense/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/depense-service:latest \
                   --skip-tls-verify
+                  --snapshot-mode=redo
               """
             }
           }
@@ -210,6 +215,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/BanqueService/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/bank-service:latest \
                   --skip-tls-verify
+                  --snapshot-mode=redo
               """
             }
           }
@@ -225,6 +231,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/ReglementAffectation/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/reglementaffectation-service:latest \
                   --skip-tls-verify
+                  --snapshot-mode=redo
               """
             }
           }
@@ -239,6 +246,7 @@ spec:
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/BankprojetFront/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/angular-frontend:latest \
                   --skip-tls-verify
+                  --snapshot-mode=redo
               """
             }
           }
