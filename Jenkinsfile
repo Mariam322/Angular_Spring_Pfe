@@ -16,11 +16,11 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "512Mi"
-        cpu: "250m"
+        memory: "400Mi"
+        cpu: "100m"
       limits:
         memory: "1Gi"
-        cpu: "500m"
+        cpu: "400m"
 
   - name: node
     image: node:20
@@ -28,11 +28,11 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "1Gi"
-        cpu: "500m"
+        memory: "600Mi"
+        cpu: "150m"
       limits:
-        memory: "2Gi"
-        cpu: "1"
+        memory: "1.5Gi"
+        cpu: "500m"
 
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
@@ -44,11 +44,11 @@ spec:
       mountPath: /kaniko/.docker
     resources:
       requests:
-        memory: "2Gi"
-        cpu: "500m"
+        memory: "1Gi"
+        cpu: "250m"
       limits:
-        memory: "4Gi"
-        cpu: "1"
+        memory: "3Gi"
+        cpu: "800m"
 
   volumes:
   - name: docker-config
