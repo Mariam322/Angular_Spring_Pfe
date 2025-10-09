@@ -53,6 +53,19 @@ spec:
         cpu: "1000m"
         ephemeral-storage: "20Gi"
 
+  - name: kubectl
+    image: bitnami/kubectl:latest
+    command: ["sleep"]
+    args: ["9999999"]
+    tty: true
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "200m"
+
   volumes:
   - name: docker-config
     projected:
@@ -163,21 +176,23 @@ spec:
 
     stage('Deploy to OVH Kubernetes') {
       steps {
-        script {
-          echo "🚀 Starting deployment to OVH Kubernetes..."
-          withKubeConfig([credentialsId: 'kubernetes-credentials-id']) {
-            sh """
-              kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
-              kubectl apply -f kubernetes/ -n ${K8S_NAMESPACE}
-            """
-            def services = [
-              'eureka-server','gateway-service','compain-service',
-              'facturation-service','depense-service','bank-service',
-              'reglementaffectation-service','angular-frontend'
-            ]
-            services.each { svc ->
-              echo "⏳ Waiting for ${svc} rollout..."
-              sh "kubectl rollout status deployment/${svc} -n ${K8S_NAMESPACE} --timeout=300s"
+        container('kubectl') {
+          script {
+            echo "🚀 Starting deployment to OVH Kubernetes..."
+            withKubeConfig([credentialsId: 'kubernetes-credentials-id']) {
+              sh """
+                kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
+                kubectl apply -f kubernetes/ -n ${K8S_NAMESPACE}
+              """
+              def services = [
+                'eureka-server','gateway-service','compain-service',
+                'facturation-service','depense-service','bank-service',
+                'reglementaffectation-service','angular-frontend'
+              ]
+              services.each { svc ->
+                echo "⏳ Waiting for ${svc} rollout..."
+                sh "kubectl rollout status deployment/${svc} -n ${K8S_NAMESPACE} --timeout=300s"
+              }
             }
           }
         }
