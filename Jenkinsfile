@@ -54,80 +54,6 @@ spec:
       }
     }
 
-    stage('Build Microservices') {
-      parallel {
-        stage('Eureka') {
-          steps {
-            container('maven') {
-              dir('EurekaCompain') {
-                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
-              }
-            }
-          }
-        }
-
-        stage('Gateway') {
-          steps {
-            container('maven') {
-              dir('Gatway') {
-                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
-              }
-            }
-          }
-        }
-
-        stage('Compain') {
-          steps {
-            container('maven') {
-              dir('ProjetCompain') {
-                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
-              }
-            }
-          }
-        }
-
-        stage('Facturation') {
-          steps {
-            container('maven') {
-              dir('Facturation') {
-                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
-              }
-            }
-          }
-        }
-
-        stage('Depense') {
-          steps {
-            container('maven') {
-              dir('Depense') {
-                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
-              }
-            }
-          }
-        }
-
-        stage('Bank') {
-          steps {
-            container('maven') {
-              dir('BanqueService') {
-                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
-              }
-            }
-          }
-        }
-
-        stage('ReglementAffectation') {
-          steps {
-            container('maven') {
-              dir('ReglementAffectation') {
-                sh "mvn clean package -DskipTests ${MAVEN_COMPILER_VERSION}"
-              }
-            }
-          }
-        }
-      }
-    }
-
     stage('Build Angular Frontend') {
       steps {
         container('node') {
@@ -152,6 +78,22 @@ spec:
       }
     }
 
+    stage('Build Java JARs') {
+      steps {
+        container('maven') {
+          sh '''
+            mvn -B -f EurekaCompain/pom.xml clean package -DskipTests
+            mvn -B -f Gatway/pom.xml clean package -DskipTests
+            mvn -B -f ProjetCompain/pom.xml clean package -DskipTests
+            mvn -B -f Facturation/pom.xml clean package -DskipTests
+            mvn -B -f Depense/pom.xml clean package -DskipTests
+            mvn -B -f BanqueService/pom.xml clean package -DskipTests
+            mvn -B -f ReglementAffectation/pom.xml clean package -DskipTests
+          '''
+        }
+      }
+    }
+
     stage('Build & Push Docker Images') {
       parallel {
 
@@ -163,7 +105,8 @@ spec:
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/EurekaCompain \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/EurekaCompain/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/eureka-server:latest \
-                  --skip-tls-verify
+                  --skip-tls-verify \
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo
               """
             }
           }
@@ -177,8 +120,8 @@ spec:
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Gatway \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Gatway/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/gateway-service:latest \
-                  --skip-tls-verify
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/terminfo"
+                  --skip-tls-verify \
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo
               """
             }
           }
@@ -192,8 +135,8 @@ spec:
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/ProjetCompain \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/ProjetCompain/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/compain-service:latest \
-                  --skip-tls-verify
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/terminfo"
+                  --skip-tls-verify \
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo
               """
             }
           }
@@ -207,8 +150,8 @@ spec:
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Facturation \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Facturation/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/facturation-service:latest \
-                  --skip-tls-verify
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/terminfo"
+                  --skip-tls-verify \
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo
               """
             }
           }
@@ -222,8 +165,8 @@ spec:
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/Depense \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/Depense/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/depense-service:latest \
-                  --skip-tls-verify
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/terminfo"
+                  --skip-tls-verify \
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo
               """
             }
           }
@@ -237,8 +180,8 @@ spec:
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/BanqueService \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/BanqueService/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/bank-service:latest \
-                  --skip-tls-verify
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/terminfo"
+                  --skip-tls-verify \
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo
               """
             }
           }
@@ -252,8 +195,8 @@ spec:
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/ReglementAffectation \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/ReglementAffectation/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/reglementaffectation-service:latest \
-                  --skip-tls-verify
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/terminfo"
+                  --skip-tls-verify \
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo
               """
             }
           }
@@ -267,8 +210,8 @@ spec:
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/BankprojetFront \
                   --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/BankprojetFront/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/angular-frontend:latest \
-                  --skip-tls-verify
-                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/terminfo"
+                  --skip-tls-verify \
+                  --ignore-path=/var/mail,/var/spool/mail,/usr/share/zoneinfo,/usr/share/terminfo
               """
             }
           }
@@ -299,7 +242,11 @@ spec:
   }
 
   post {
-    success { echo '✅ Pipeline complet exécuté avec succès (Build + Push + Deploy)' }
-    failure { echo '❌ Le pipeline a échoué — consulte les logs Jenkins pour les détails.' }
+    success {
+      echo '✅ Pipeline completed successfully (Build + Push + Deploy)'
+    }
+    failure {
+      echo '❌ Pipeline failed — check Jenkins logs for details.'
+    }
   }
 }
