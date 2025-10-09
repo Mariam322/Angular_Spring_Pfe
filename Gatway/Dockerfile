@@ -1,7 +1,9 @@
+# Image Java stable et légère
 FROM amazoncorretto:17
+WORKDIR /app
 
-# Supprimer liens symboliques cassés
+# Copie le JAR compilé par Maven
+COPY target/*.jar app.jar
 
-VOLUME /tmp
-COPY target/*.jar  app.jar
-ENTRYPOINT ["java","-jar", "app.jar"]
+# Commande d'exécution
+ENTRYPOINT ["java", "-jar", "app.jar"]
