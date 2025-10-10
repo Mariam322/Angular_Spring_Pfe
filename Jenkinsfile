@@ -45,12 +45,12 @@ spec:
     resources:
       requests:
         memory: "2Gi"
-        cpu: "600m"
-        ephemeral-storage: "20Gi"
+        cpu: "500m"
+        ephemeral-storage: "10Gi"
       limits:
         memory: "4Gi"
         cpu: "1000m"
-        ephemeral-storage: "30Gi"
+        ephemeral-storage: "20Gi"
 
   - name: kubectl
     image: lachlanevenson/k8s-kubectl:v1.25.4
