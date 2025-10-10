@@ -2,8 +2,7 @@
 .git
 .gitignore
 README.md
-target/
-!target/*.jar
+
 src/
 .idea/
 *.log
