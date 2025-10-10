@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 COPY . .
-RUN npx ng build BankprojetFront --configuration production
+RUN npm run build -- --configuration production
 
 # Étape 2 : Servir avec Nginx
 FROM nginx:alpine
