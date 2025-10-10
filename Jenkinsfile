@@ -54,9 +54,8 @@ spec:
         ephemeral-storage: "20Gi"
 
   - name: kubectl
-    image: lachlanevenson/k8s-kubectl
-    command: ["sleep"]
-    args: ["9999999"]
+    image: lachlanevenson/k8s-kubectl:v1.25.4
+    command: ["cat"]
     tty: true
     resources:
       requests:
@@ -83,7 +82,6 @@ spec:
   environment {
     DOCKER_REGISTRY = 'docker.io/mariammseddi12'
     K8S_NAMESPACE = 'default'
-    MAVEN_COMPILER_VERSION = '-Dmaven.compiler.plugin.version=3.11.0'
   }
 
   options {
@@ -179,30 +177,35 @@ spec:
         container('kubectl') {
           script {
             echo "🚀 Starting deployment to OVH Kubernetes..."
+
+            sh "kubectl version --client"
+            echo "✅ kubectl is working inside the container"
+
             withKubeConfig([credentialsId: 'kubernetes-credentials-id']) {
-
-              // Test de connexion
-              sh "kubectl version --client && echo '✅ kubectl is working inside the container'"
-
-              // Application des manifests
               sh """
                 kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
                 kubectl apply -f kubernetes/ -n ${K8S_NAMESPACE}
-                echo "✅ Manifests applied, checking pods..."
-                sleep 10
-                kubectl get pods -n ${K8S_NAMESPACE} -o wide
+                echo '✅ Manifests applied, waiting for pods to be ready...'
               """
 
-              // Vérification des pods
-              def checkPods = sh(
-                script: "kubectl get pods -n ${K8S_NAMESPACE} --no-headers | awk '{print \$3}' | grep -Ev 'Running|Completed' | wc -l",
+              echo "⏳ Waiting 90 seconds for all pods to start..."
+              sleep 90
+
+              sh "kubectl get pods -n ${K8S_NAMESPACE} -o wide"
+
+              def badPods = sh(
+                script: """
+                  kubectl get pods -n ${K8S_NAMESPACE} --no-headers | \
+                  awk '{print \$1\" \"\$3}' | grep -E 'CrashLoopBackOff|Error|ImagePullBackOff|ErrImagePull' || true
+                """,
                 returnStdout: true
               ).trim()
 
-              if (checkPods != "0") {
-                error("❌ Some pods are not running properly! Check 'kubectl get pods' for details.")
+              if (badPods) {
+                echo "❌ The following pods failed to start:\n${badPods}"
+                error("Deployment failed — some pods did not start correctly.")
               } else {
-                echo "✅ All pods are running successfully."
+                echo "✅ All pods are healthy and running."
               }
             }
           }
