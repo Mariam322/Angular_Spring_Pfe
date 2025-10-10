@@ -10,7 +10,6 @@ metadata:
 spec:
   serviceAccountName: default
   containers:
-
   - name: maven
     image: maven:3.9.9-eclipse-temurin-17
     command: ["cat"]
@@ -90,6 +89,7 @@ spec:
   }
 
   stages {
+
     stage('Checkout Code') {
       steps {
         deleteDir()
@@ -165,7 +165,7 @@ spec:
                   --cache=true
               """
               echo "✅ ${svc.name} image built & pushed successfully."
-              sleep 3
+              sleep 5
             }
           }
         }
@@ -178,31 +178,63 @@ spec:
           script {
             echo "🚀 Starting deployment to OVH Kubernetes..."
 
-            sh "kubectl version --client"
-            echo "✅ kubectl is working inside the container"
-
             withKubeConfig([credentialsId: 'kubernetes-credentials-id']) {
               sh """
+                set -e
+                echo "🧭 Using namespace: ${K8S_NAMESPACE}"
                 kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
-                kubectl apply -f kubernetes/ -n ${K8S_NAMESPACE}
-                echo '✅ Manifests applied, waiting for pods to be ready...'
+
+                echo "🧹 Cleaning old resources..."
+                kubectl delete deployment --all -n ${K8S_NAMESPACE} || true
+                kubectl delete svc --all -n ${K8S_NAMESPACE} || true
+
+                echo "📁 Workspace content:"
+                ls -R
+
+                echo "⚙️ Deploying Eureka..."
+                kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
+                sleep 30
+
+                echo "⚙️ Deploying Gateway..."
+                kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
+                sleep 15
+
+                echo "⚙️ Deploying Compain..."
+                kubectl apply -f kubernetes/compain-service.yaml -n ${K8S_NAMESPACE}
+
+                echo "⚙️ Deploying Facturation..."
+                kubectl apply -f kubernetes/facturation-service.yaml -n ${K8S_NAMESPACE}
+
+                echo "⚙️ Deploying Depense..."
+                kubectl apply -f kubernetes/depense-service.yaml -n ${K8S_NAMESPACE}
+
+                echo "⚙️ Deploying Bank..."
+                kubectl apply -f kubernetes/bank-service.yaml -n ${K8S_NAMESPACE}
+
+                echo "⚙️ Deploying ReglementAffectation..."
+                kubectl apply -f kubernetes/reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
+
+                echo "⚙️ Deploying Angular Frontend..."
+                kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
+
+                echo "⏳ Waiting 90 seconds for all pods to start..."
+                sleep 90
+
+                echo "📋 Pods status:"
+                kubectl get pods -n ${K8S_NAMESPACE} -o wide
               """
 
-              echo "⏳ Waiting 90 seconds for all pods to start..."
-              sleep 90
-
-              sh "kubectl get pods -n ${K8S_NAMESPACE} -o wide"
-
+              // 🔍 Vérification automatique des pods
               def badPods = sh(
                 script: """
                   kubectl get pods -n ${K8S_NAMESPACE} --no-headers | \
-                  awk '{print \$1\" \"\$3}' | grep -E 'CrashLoopBackOff|Error|ImagePullBackOff|ErrImagePull' || true
+                  awk '{print \$1" "\$3}' | grep -E 'CrashLoopBackOff|Error|ImagePullBackOff|ErrImagePull' || true
                 """,
                 returnStdout: true
               ).trim()
 
               if (badPods) {
-                echo "❌ The following pods failed to start:\n${badPods}"
+                echo "❌ The following pods failed to start:\\n${badPods}"
                 error("Deployment failed — some pods did not start correctly.")
               } else {
                 echo "✅ All pods are healthy and running."
