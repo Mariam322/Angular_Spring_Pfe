@@ -54,7 +54,7 @@ spec:
         ephemeral-storage: "20Gi"
 
   - name: kubectl
-    image: lachlanevenson/k8s-kubectl:v1.29.2
+    image: lachlanevenson/k8s-kubectl
     command: ["sleep"]
     args: ["9999999"]
     tty: true
