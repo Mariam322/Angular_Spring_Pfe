@@ -54,9 +54,8 @@ spec:
         ephemeral-storage: "20Gi"
 
   - name: kubectl
-    image: lachlanevenson/k8s-kubectl:v1.29.0
-    command: ["sleep"]
-    args: ["9999999"]
+    image: bitnami/kubectl:1.29
+    command: ["sh", "-c", "sleep 9999999"]
     tty: true
     resources:
       requests:
@@ -183,16 +182,20 @@ spec:
               sh """
                 kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
                 kubectl apply -f kubernetes/ -n ${K8S_NAMESPACE}
+                echo "✅ Manifests applied, checking pods..."
+                sleep 10
                 kubectl get pods -n ${K8S_NAMESPACE} -o wide
               """
-              def services = [
-                'eureka-server','gateway-service','compain-service',
-                'facturation-service','depense-service','bank-service',
-                'reglementaffectation-service','angular-frontend'
-              ]
-              services.each { svc ->
-                echo "⏳ Waiting for ${svc} rollout..."
-                sh "kubectl rollout status deployment/${svc} -n ${K8S_NAMESPACE} --timeout=300s"
+
+              def checkPods = sh(
+                script: "kubectl get pods -n ${K8S_NAMESPACE} --no-headers | awk '{print \$3}' | grep -Ev 'Running|Completed' | wc -l",
+                returnStdout: true
+              ).trim()
+
+              if (checkPods != "0") {
+                error("❌ Some pods are not running properly! Check 'kubectl get pods' for details.")
+              } else {
+                echo "✅ All pods are running successfully."
               }
             }
           }
