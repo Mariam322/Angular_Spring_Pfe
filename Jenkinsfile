@@ -44,13 +44,13 @@ spec:
       mountPath: /kaniko/.docker
     resources:
       requests:
-        memory: "2Gi"
-        cpu: "500m"
-        ephemeral-storage: "10Gi"
-      limits:
-        memory: "4Gi"
+        memory: "6Gi"
         cpu: "1000m"
         ephemeral-storage: "20Gi"
+      limits:
+        memory: "8Gi"
+        cpu: "2000m"
+        ephemeral-storage: "30Gi"
 
   - name: kubectl
     image: lachlanevenson/k8s-kubectl:v1.25.4
@@ -114,7 +114,7 @@ spec:
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
-              node --max-old-space-size=1536 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
+              node --max-old-space-size=4096 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
         }
