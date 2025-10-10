@@ -44,12 +44,12 @@ spec:
       mountPath: /kaniko/.docker
     resources:
       requests:
-        memory: "6Gi"
-        cpu: "1000m"
+        memory: "2Gi"
+        cpu: "600m"
         ephemeral-storage: "20Gi"
       limits:
-        memory: "8Gi"
-        cpu: "2000m"
+        memory: "4Gi"
+        cpu: "1000m"
         ephemeral-storage: "30Gi"
 
   - name: kubectl
