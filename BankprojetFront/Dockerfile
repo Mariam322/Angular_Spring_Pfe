@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:20-alpine AS build
 # Installer Python et Make pour node-gyp
 RUN apk add --no-cache python3 make g++
 WORKDIR /app
