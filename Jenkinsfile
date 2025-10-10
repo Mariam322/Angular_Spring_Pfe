@@ -54,7 +54,7 @@ spec:
         ephemeral-storage: "20Gi"
 
   - name: kubectl
-    image: bitnami/kubectl:1.29
+    image: bitnami/kubectl:latest
     command: ["sh", "-c", "sleep 9999999"]
     tty: true
     resources:
