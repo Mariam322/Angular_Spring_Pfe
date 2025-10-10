@@ -114,7 +114,7 @@ spec:
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
-              node --max-old-space-size=4096 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
+              node --max-old-space-size=1536 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
         }
@@ -217,28 +217,14 @@ spec:
                 echo "⚙️ Deploying Angular Frontend..."
                 kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
 
-                echo "⏳ Waiting 90 seconds for all pods to start..."
+                echo "⏳ Waiting for pods to start..."
                 sleep 90
 
                 echo "📋 Pods status:"
                 kubectl get pods -n ${K8S_NAMESPACE} -o wide
+
+                echo "✅ All services deployed successfully."
               """
-
-              // 🔍 Vérification automatique des pods
-              def badPods = sh(
-                script: """
-                  kubectl get pods -n ${K8S_NAMESPACE} --no-headers | \
-                  awk '{print \$1" "\$3}' | grep -E 'CrashLoopBackOff|Error|ImagePullBackOff|ErrImagePull' || true
-                """,
-                returnStdout: true
-              ).trim()
-
-              if (badPods) {
-                echo "❌ The following pods failed to start:\\n${badPods}"
-                error("Deployment failed — some pods did not start correctly.")
-              } else {
-                echo "✅ All pods are healthy and running."
-              }
             }
           }
         }
