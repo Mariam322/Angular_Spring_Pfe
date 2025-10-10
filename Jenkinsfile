@@ -54,8 +54,9 @@ spec:
         ephemeral-storage: "20Gi"
 
   - name: kubectl
-    image: bitnami/kubectl:latest
-    command: ["sh", "-c", "sleep 9999999"]
+    image: lachlanevenson/k8s-kubectl:v1.29.2
+    command: ["sleep"]
+    args: ["9999999"]
     tty: true
     resources:
       requests:
@@ -179,6 +180,11 @@ spec:
           script {
             echo "🚀 Starting deployment to OVH Kubernetes..."
             withKubeConfig([credentialsId: 'kubernetes-credentials-id']) {
+
+              // Test de connexion
+              sh "kubectl version --client && echo '✅ kubectl is working inside the container'"
+
+              // Application des manifests
               sh """
                 kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
                 kubectl apply -f kubernetes/ -n ${K8S_NAMESPACE}
@@ -187,6 +193,7 @@ spec:
                 kubectl get pods -n ${K8S_NAMESPACE} -o wide
               """
 
+              // Vérification des pods
               def checkPods = sh(
                 script: "kubectl get pods -n ${K8S_NAMESPACE} --no-headers | awk '{print \$3}' | grep -Ev 'Running|Completed' | wc -l",
                 returnStdout: true
