@@ -22,7 +22,7 @@ spec:
           value: "eureka-server"
         - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
           value: "http://eureka-service:8761/eureka/"
-          
+---          
 apiVersion: v1
 kind: Service
 metadata:
