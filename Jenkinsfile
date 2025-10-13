@@ -25,9 +25,6 @@ pipeline {
           yaml """
 apiVersion: v1
 kind: Pod
-metadata:
-  labels:
-    app: maven-pod
 spec:
   containers:
   - name: maven
@@ -36,13 +33,13 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "1Gi"
-        cpu: "250m"
-        ephemeral-storage: "5Gi"
-      limits:
         memory: "2Gi"
         cpu: "500m"
         ephemeral-storage: "10Gi"
+      limits:
+        memory: "4Gi"
+        cpu: "1000m"
+        ephemeral-storage: "20Gi"
 """
         }
       }
@@ -67,9 +64,6 @@ spec:
           yaml """
 apiVersion: v1
 kind: Pod
-metadata:
-  labels:
-    app: node-pod
 spec:
   containers:
   - name: node
@@ -93,8 +87,7 @@ spec:
           dir('BankprojetFront') {
             sh '''
               npm config set legacy-peer-deps true
-              mkdir -p ~/.npm
-              npm ci --cache ~/.npm --prefer-offline
+              npm install
               npm install @popperjs/core --save
               node -e "
                 const fs = require('fs');
@@ -105,7 +98,7 @@ spec:
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
-              node --max-old-space-size=3072 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
+              node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
         }
@@ -118,15 +111,16 @@ spec:
           yaml """
 apiVersion: v1
 kind: Pod
-metadata:
-  labels:
-    app: kaniko-pod
 spec:
   containers:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
     command: ["sleep"]
     args: ["9999999"]
+    volumeMounts:
+      - name: docker-config
+        mountPath: /kaniko/.docker/config.json
+        subPath: .dockerconfigjson
     resources:
       requests:
         memory: "4Gi"
@@ -138,13 +132,8 @@ spec:
         ephemeral-storage: "20Gi"
   volumes:
     - name: docker-config
-      projected:
-        sources:
-        - secret:
-            name: regcred
-            items:
-            - key: .dockerconfigjson
-              path: config.json
+      secret:
+        secretName: regcred
 """
         }
       }
@@ -186,9 +175,6 @@ spec:
           yaml """
 apiVersion: v1
 kind: Pod
-metadata:
-  labels:
-    app: kubectl-pod
 spec:
   containers:
   - name: kubectl
@@ -197,13 +183,11 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "128Mi"
-        cpu: "50m"
-        ephemeral-storage: "1Gi"
-      limits:
         memory: "256Mi"
         cpu: "100m"
-        ephemeral-storage: "2Gi"
+      limits:
+        memory: "512Mi"
+        cpu: "200m"
 """
         }
       }
