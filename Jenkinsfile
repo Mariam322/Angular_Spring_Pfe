@@ -1,5 +1,5 @@
 pipeline {
-  agent none  // agent global désactivé, on définit agent par stage
+  agent none
   environment {
     DOCKER_REGISTRY = 'docker.io/mariammseddi12'
     K8S_NAMESPACE = 'default'
@@ -10,7 +10,6 @@ pipeline {
   }
 
   stages {
-
     stage('Checkout Code') {
       agent any
       steps {
@@ -76,11 +75,11 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "512Mi"
-        cpu: "200m"
-      limits:
         memory: "1Gi"
         cpu: "400m"
+      limits:
+        memory: "2Gi"
+        cpu: "800m"
 """
         }
       }
@@ -100,7 +99,7 @@ spec:
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
-              node --max-old-space-size=1536 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
+              node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
         }
@@ -127,11 +126,11 @@ spec:
         mountPath: /kaniko/.docker
     resources:
       requests:
-        memory: "1Gi"
-        cpu: "400m"
-      limits:
-        memory: "2Gi"
+        memory: "4Gi"
         cpu: "800m"
+      limits:
+        memory: "6Gi"
+        cpu: "2"
   volumes:
     - name: docker-config
       projected:
@@ -157,7 +156,6 @@ spec:
               [name: 'ReglementAffectation', path: 'ReglementAffectation', image: 'reglementaffectation-service'],
               [name: 'Angular', path: 'BankprojetFront', image: 'angular-frontend']
             ]
-
             for (svc in services) {
               echo "🚀 Building ${svc.name} image..."
               sh "rm -rf /kaniko/.cache_${svc.name} || true"
@@ -212,7 +210,6 @@ spec:
                 kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
                 kubectl delete deployment --all -n ${K8S_NAMESPACE} || true
                 kubectl delete svc --all -n ${K8S_NAMESPACE} || true
-
                 kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
                 sleep 30
                 kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
@@ -223,7 +220,6 @@ spec:
                 kubectl apply -f kubernetes/bank-service.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
-
                 sleep 90
                 kubectl get pods -n ${K8S_NAMESPACE} -o wide
               """
@@ -232,7 +228,6 @@ spec:
         }
       }
     }
-
   }
 
   post {
