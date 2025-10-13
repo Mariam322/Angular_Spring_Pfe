@@ -1,50 +1,103 @@
 pipeline {
-  agent none
-  environment {
-    DOCKER_REGISTRY = 'docker.io/mariammseddi12'
-    K8S_NAMESPACE = 'default'
-  }
-  options {
-    timeout(time: 90, unit: 'MINUTES')
-    disableConcurrentBuilds()
-    retry(2)
-    buildDiscarder(logRotator(numToKeepStr: '10'))
-  }
-  stages {
-    stage('Checkout Code') {
-      agent any
-      steps {
-        deleteDir()
-        git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
-      }
-    }
-    stage('Build Angular Frontend') {
-      agent {
-        kubernetes {
-          yaml """
+  agent {
+    kubernetes {
+      yaml """
 apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    app: node-build
+    app: kaniko-pipeline
 spec:
   serviceAccountName: default
   containers:
+  - name: maven
+    image: maven:3.9.9-eclipse-temurin-17
+    command: ["cat"]
+    tty: true
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "200m"
+
   - name: node
     image: node:20
     command: ["cat"]
     tty: true
     resources:
       requests:
-        memory: "1Gi"
+        memory: "512Mi"
         cpu: "200m"
       limits:
+        memory: "1Gi"
+        cpu: "400m"
+
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    imagePullPolicy: Always
+    command: ["sleep"]
+    args: ["9999999"]
+    volumeMounts:
+      - name: docker-config
+        mountPath: /kaniko/.docker
+    resources:
+      requests:
         memory: "2Gi"
         cpu: "500m"
+        ephemeral-storage: "10Gi"
+      limits:
+        memory: "6Gi"
+        cpu: "1200m"
+        ephemeral-storage: "20Gi"
+
+  - name: kubectl
+    image: lachlanevenson/k8s-kubectl:v1.25.4
+    command: ["cat"]
+    tty: true
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "50m"
+      limits:
+        memory: "256Mi"
+        cpu: "100m"
+
+  volumes:
+  - name: docker-config
+    projected:
+      sources:
+      - secret:
+          name: regcred
+          items:
+          - key: .dockerconfigjson
+            path: config.json
   restartPolicy: Never
 """
-        }
+    }
+  }
+
+  environment {
+    DOCKER_REGISTRY = 'docker.io/mariammseddi12'
+    K8S_NAMESPACE = 'default'
+  }
+
+  options {
+    timeout(time: 60, unit: 'MINUTES')
+    disableConcurrentBuilds()
+  }
+
+  stages {
+
+    stage('Checkout Code') {
+      steps {
+        deleteDir()
+        git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
       }
+    }
+
+    stage('Build Angular Frontend') {
       steps {
         container('node') {
           dir('BankprojetFront') {
@@ -61,91 +114,30 @@ spec:
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
-              node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
+              node --max-old-space-size=1536 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
         }
       }
     }
+
     stage('Build Java JARs') {
-      agent {
-        kubernetes {
-          yaml """
-apiVersion: v1
-kind: Pod
-metadata:
-  labels:
-    app: maven-build
-spec:
-  serviceAccountName: default
-  containers:
-  - name: maven
-    image: maven:3.9.9-eclipse-temurin-17
-    command: ["cat"]
-    tty: true
-    resources:
-      requests:
-        memory: "1.5Gi"
-        cpu: "300m"
-      limits:
-        memory: "2Gi"
-        cpu: "600m"
-  restartPolicy: Never
-"""
-        }
-      }
       steps {
         container('maven') {
           sh '''
-            for module in EurekaCompain Gatway ProjetCompain Facturation Depense BanqueService ReglementAffectation; do
-              mvn -B --file $module/pom.xml clean package -DskipTests
-            done
+            mvn -B -f EurekaCompain/pom.xml clean package -DskipTests
+            mvn -B -f Gatway/pom.xml clean package -DskipTests
+            mvn -B -f ProjetCompain/pom.xml clean package -DskipTests
+            mvn -B -f Facturation/pom.xml clean package -DskipTests
+            mvn -B -f Depense/pom.xml clean package -DskipTests
+            mvn -B -f BanqueService/pom.xml clean package -DskipTests
+            mvn -B -f ReglementAffectation/pom.xml clean package -DskipTests
           '''
         }
       }
     }
-    stage('Build & Push Docker Images') {
-      agent {
-        kubernetes {
-          yaml """
-apiVersion: v1
-kind: Pod
-metadata:
-  labels:
-    app: kaniko-build
-spec:
-  serviceAccountName: default
-  containers:
-  - name: kaniko
-    image: gcr.io/kaniko-project/executor:debug
-    imagePullPolicy: Always
-    command: ["sleep"]
-    args: ["9999999"]
-    volumeMounts:
-      - name: docker-config
-        mountPath: /kaniko/.docker
-    resources:
-      requests:
-        memory: "2Gi"
-        cpu: "500m"
-        ephemeral-storage: "10Gi"
-      limits:
-        memory: "4Gi"
-        cpu: "1000m"
-        ephemeral-storage: "20Gi"
-  volumes:
-  - name: docker-config
-    projected:
-      sources:
-        - secret:
-            name: regcred
-            items:
-              - key: .dockerconfigjson
-                path: config.json
-  restartPolicy: Never
-"""
-        }
-      }
+
+    stage('Build & Push Docker Images (Sequential)') {
       steps {
         container('kaniko') {
           script {
@@ -159,7 +151,10 @@ spec:
               [name: 'ReglementAffectation', path: 'ReglementAffectation', image: 'reglementaffectation-service'],
               [name: 'Angular', path: 'BankprojetFront', image: 'angular-frontend']
             ]
+
             for (svc in services) {
+              echo "🚀 Building ${svc.name} image..."
+              sh "rm -rf /kaniko/.cache_${svc.name} || true"
               sh """
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/${svc.path} \
@@ -169,64 +164,66 @@ spec:
                   --snapshot-mode=redo \
                   --cache=true
               """
+              echo "✅ ${svc.name} image built & pushed successfully."
               sleep 5
             }
           }
         }
       }
     }
+
     stage('Deploy to OVH Kubernetes') {
-      agent {
-        kubernetes {
-          yaml """
-apiVersion: v1
-kind: Pod
-metadata:
-  labels:
-    app: kubectl-deploy
-spec:
-  serviceAccountName: default
-  containers:
-  - name: kubectl
-    image: lachlanevenson/k8s-kubectl:v1.25.4
-    command: ["cat"]
-    tty: true
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu: "100m"
-      limits:
-        memory: "512Mi"
-        cpu: "200m"
-  restartPolicy: Never
-"""
-        }
-      }
       steps {
         container('kubectl') {
           script {
+            echo "🚀 Starting deployment to OVH Kubernetes..."
+
             withKubeConfig([credentialsId: 'kubernetes-credentials-id']) {
               sh """
-                # Créer le namespace si nécessaire
+                set -e
+                echo "🧭 Using namespace: ${K8S_NAMESPACE}"
                 kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
-                
-                # Déployer/redéployer tous les services sans suppression préalable
-                for f in eureka gateway compain-service facturation-service depense-service bank-service reglementaffectation-service frontend; do
-                  echo "Deploying \$f..."
-                  kubectl apply -f kubernetes/\$f.yaml -n ${K8S_NAMESPACE}
-                  sleep 10
-                done
-                
-                # Attendre que les pods soient prêts
-                echo "Waiting for pods to be ready..."
-                sleep 60
-                
-                # Vérifier l'état des déploiements
-                kubectl get deployments -n ${K8S_NAMESPACE} -o wide
-                echo ""
+
+                echo "🧹 Cleaning old resources..."
+                kubectl delete deployment --all -n ${K8S_NAMESPACE} || true
+                kubectl delete svc --all -n ${K8S_NAMESPACE} || true
+
+                echo "📁 Workspace content:"
+                ls -R
+
+                echo "⚙️ Deploying Eureka..."
+                kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
+                sleep 30
+
+                echo "⚙️ Deploying Gateway..."
+                kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
+                sleep 15
+
+                echo "⚙️ Deploying Compain..."
+                kubectl apply -f kubernetes/compain-service.yaml -n ${K8S_NAMESPACE}
+
+                echo "⚙️ Deploying Facturation..."
+                kubectl apply -f kubernetes/facturation-service.yaml -n ${K8S_NAMESPACE}
+
+                echo "⚙️ Deploying Depense..."
+                kubectl apply -f kubernetes/depense-service.yaml -n ${K8S_NAMESPACE}
+
+                echo "⚙️ Deploying Bank..."
+                kubectl apply -f kubernetes/bank-service.yaml -n ${K8S_NAMESPACE}
+
+                echo "⚙️ Deploying ReglementAffectation..."
+                kubectl apply -f kubernetes/reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
+
+                echo "⚙️ Deploying Angular Frontend..."
+                kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
+
+                echo "⏳ Waiting for pods to start..."
+                sleep 90
+
+                echo "📋 Pods status:"
                 kubectl get pods -n ${K8S_NAMESPACE} -o wide
-                echo ""
-                kubectl get services -n ${K8S_NAMESPACE} -o wide
+
+                echo "✅ All services deployed successfully."
               """
             }
           }
@@ -234,6 +231,7 @@ spec:
       }
     }
   }
+
   post {
     success {
       echo '✅ Pipeline completed successfully (Build + Push + Deploy)'
