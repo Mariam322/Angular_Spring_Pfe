@@ -10,6 +10,7 @@ pipeline {
   }
 
   stages {
+
     stage('Checkout Code') {
       agent any
       steps {
@@ -35,11 +36,13 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "512Mi"
-        cpu: "250m"
-      limits:
         memory: "1Gi"
+        cpu: "250m"
+        ephemeral-storage: "5Gi"
+      limits:
+        memory: "2Gi"
         cpu: "500m"
+        ephemeral-storage: "10Gi"
 """
         }
       }
@@ -75,11 +78,13 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "1Gi"
-        cpu: "400m"
-      limits:
         memory: "2Gi"
-        cpu: "800m"
+        cpu: "500m"
+        ephemeral-storage: "10Gi"
+      limits:
+        memory: "4Gi"
+        cpu: "1000m"
+        ephemeral-storage: "20Gi"
 """
         }
       }
@@ -88,7 +93,8 @@ spec:
           dir('BankprojetFront') {
             sh '''
               npm config set legacy-peer-deps true
-              npm install
+              mkdir -p ~/.npm
+              npm ci --cache ~/.npm --prefer-offline
               npm install @popperjs/core --save
               node -e "
                 const fs = require('fs');
@@ -99,7 +105,7 @@ spec:
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
-              node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
+              node --max-old-space-size=3072 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
         }
@@ -121,16 +127,15 @@ spec:
     image: gcr.io/kaniko-project/executor:debug
     command: ["sleep"]
     args: ["9999999"]
-    volumeMounts:
-      - name: docker-config
-        mountPath: /kaniko/.docker
     resources:
       requests:
         memory: "4Gi"
         cpu: "800m"
+        ephemeral-storage: "10Gi"
       limits:
         memory: "6Gi"
         cpu: "2"
+        ephemeral-storage: "20Gi"
   volumes:
     - name: docker-config
       projected:
@@ -158,7 +163,6 @@ spec:
             ]
             for (svc in services) {
               echo "🚀 Building ${svc.name} image..."
-              sh "rm -rf /kaniko/.cache_${svc.name} || true"
               sh """
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/${svc.path} \
@@ -195,9 +199,11 @@ spec:
       requests:
         memory: "128Mi"
         cpu: "50m"
+        ephemeral-storage: "1Gi"
       limits:
         memory: "256Mi"
         cpu: "100m"
+        ephemeral-storage: "2Gi"
 """
         }
       }
