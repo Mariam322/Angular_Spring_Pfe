@@ -18,6 +18,7 @@ pipeline {
         git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
       }
     }
+    
     stage('Build Angular Frontend') {
       agent {
         kubernetes {
@@ -43,6 +44,7 @@ spec:
         cpu: "500m"
   restartPolicy: Never
 """
+          defaultContainer 'node'  // AJOUTÉ ICI
         }
       }
       steps {
@@ -67,6 +69,7 @@ spec:
         }
       }
     }
+    
     stage('Build Java JARs') {
       agent {
         kubernetes {
@@ -92,6 +95,7 @@ spec:
         cpu: "600m"
   restartPolicy: Never
 """
+          defaultContainer 'maven'  // AJOUTÉ ICI
         }
       }
       steps {
@@ -104,6 +108,7 @@ spec:
         }
       }
     }
+    
     stage('Build & Push Docker Images') {
       agent {
         kubernetes {
@@ -144,6 +149,7 @@ spec:
                 path: config.json
   restartPolicy: Never
 """
+          defaultContainer 'kaniko'  // AJOUTÉ ICI
         }
       }
       steps {
@@ -175,6 +181,7 @@ spec:
         }
       }
     }
+    
     stage('Deploy to OVH Kubernetes') {
       agent {
         kubernetes {
@@ -200,6 +207,7 @@ spec:
         cpu: "200m"
   restartPolicy: Never
 """
+          defaultContainer 'kubectl'  // AJOUTÉ ICI
         }
       }
       steps {
@@ -209,10 +217,11 @@ spec:
               sh """
                 set -e
                 kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
-                kubectl delete deployment -l app=myapp -n ${K8S_NAMESPACE} || true
-                kubectl delete svc -l app=myapp -n ${K8S_NAMESPACE} || true
+                
+                # SUPPRIMÉ: kubectl delete svc -l app=myapp -n ${K8S_NAMESPACE} || true
+                
                 for f in eureka gateway compain-service facturation-service depense-service bank-service reglementaffectation-service frontend; do
-                  kubectl apply -f kubernetes/$f.yaml -n ${K8S_NAMESPACE}
+                  kubectl apply -f kubernetes/\$f.yaml -n ${K8S_NAMESPACE}
                   sleep 10
                 done
                 sleep 60
