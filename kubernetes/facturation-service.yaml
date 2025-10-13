@@ -31,3 +31,4 @@ spec:
   ports:
   - port: 8024
     targetPort: 8024
+  type: LoadBalancer
