@@ -184,37 +184,14 @@ spec:
                 echo "🧭 Using namespace: ${K8S_NAMESPACE}"
                 kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
 
-                echo "🧹 Cleaning old resources..."
-                kubectl delete deployment --all -n ${K8S_NAMESPACE} || true
-                kubectl delete svc --all -n ${K8S_NAMESPACE} || true
-
-                echo "📁 Workspace content:"
-                ls -R
-
-                echo "⚙️ Deploying Eureka..."
+                echo "⚙️ Applying updated manifests..."
                 kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
-                sleep 30
-
-                echo "⚙️ Deploying Gateway..."
                 kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
-                sleep 15
-
-                echo "⚙️ Deploying Compain..."
                 kubectl apply -f kubernetes/compain-service.yaml -n ${K8S_NAMESPACE}
-
-                echo "⚙️ Deploying Facturation..."
                 kubectl apply -f kubernetes/facturation-service.yaml -n ${K8S_NAMESPACE}
-
-                echo "⚙️ Deploying Depense..."
                 kubectl apply -f kubernetes/depense-service.yaml -n ${K8S_NAMESPACE}
-
-                echo "⚙️ Deploying Bank..."
                 kubectl apply -f kubernetes/bank-service.yaml -n ${K8S_NAMESPACE}
-
-                echo "⚙️ Deploying ReglementAffectation..."
                 kubectl apply -f kubernetes/reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
-
-                echo "⚙️ Deploying Angular Frontend..."
                 kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
 
                 echo "⏳ Waiting for pods to start..."
