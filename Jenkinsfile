@@ -25,6 +25,9 @@ pipeline {
           yaml """
 apiVersion: v1
 kind: Pod
+metadata:
+  labels:
+    app: maven-pod
 spec:
   containers:
   - name: maven
@@ -33,13 +36,11 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "2Gi"
-        cpu: "500m"
-        ephemeral-storage: "10Gi"
+        memory: "1Gi"
+        cpu: "300m"
       limits:
-        memory: "4Gi"
-        cpu: "1000m"
-        ephemeral-storage: "20Gi"
+        memory: "2Gi"
+        cpu: "700m"
 """
         }
       }
@@ -64,6 +65,9 @@ spec:
           yaml """
 apiVersion: v1
 kind: Pod
+metadata:
+  labels:
+    app: node-pod
 spec:
   containers:
   - name: node
@@ -72,13 +76,11 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "2Gi"
-        cpu: "500m"
-        ephemeral-storage: "10Gi"
+        memory: "1Gi"
+        cpu: "300m"
       limits:
-        memory: "4Gi"
-        cpu: "1000m"
-        ephemeral-storage: "20Gi"
+        memory: "2Gi"
+        cpu: "700m"
 """
         }
       }
@@ -89,23 +91,16 @@ spec:
               npm config set legacy-peer-deps true
               npm install
               npm install @popperjs/core --save
-
               node -e "
                 const fs = require('fs');
                 const config = JSON.parse(fs.readFileSync('angular.json', 'utf8'));
-                for (const key in config.projects) {
-                  const proj = config.projects[key];
-                  if (proj.architect?.build?.configurations?.production?.budgets) {
-                    delete proj.architect.build.configurations.production.budgets;
-                  }
-                  if (proj.architect?.build?.budgets) {
-                    delete proj.architect.build.budgets;
-                  }
+                const project = Object.keys(config.projects)[0];
+                if (config.projects[project]?.architect?.build?.configurations?.production?.budgets) {
+                  delete config.projects[project].architect.build.configurations.production.budgets;
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
-
-              node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
+              node --max-old-space-size=1024 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
         }
@@ -118,6 +113,9 @@ spec:
           yaml """
 apiVersion: v1
 kind: Pod
+metadata:
+  labels:
+    app: kaniko-pod
 spec:
   containers:
   - name: kaniko
@@ -126,21 +124,25 @@ spec:
     args: ["9999999"]
     volumeMounts:
       - name: docker-config
-        mountPath: /kaniko/.docker/config.json
-        subPath: .dockerconfigjson
+        mountPath: /kaniko/.docker
     resources:
       requests:
-        memory: "4Gi"
-        cpu: "800m"
+        memory: "2Gi"
+        cpu: "500m"
         ephemeral-storage: "10Gi"
       limits:
-        memory: "6Gi"
-        cpu: "2"
+        memory: "4Gi"
+        cpu: "1000m"
         ephemeral-storage: "20Gi"
   volumes:
     - name: docker-config
-      secret:
-        secretName: regcred
+      projected:
+        sources:
+        - secret:
+            name: regcred
+            items:
+            - key: .dockerconfigjson
+              path: config.json
 """
         }
       }
@@ -157,6 +159,7 @@ spec:
               [name: 'ReglementAffectation', path: 'ReglementAffectation', image: 'reglementaffectation-service'],
               [name: 'Angular', path: 'BankprojetFront', image: 'angular-frontend']
             ]
+
             for (svc in services) {
               echo "🚀 Building ${svc.name} image..."
               sh """
@@ -182,6 +185,9 @@ spec:
           yaml """
 apiVersion: v1
 kind: Pod
+metadata:
+  labels:
+    app: kubectl-pod
 spec:
   containers:
   - name: kubectl
@@ -207,6 +213,7 @@ spec:
                 kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
                 kubectl delete deployment --all -n ${K8S_NAMESPACE} || true
                 kubectl delete svc --all -n ${K8S_NAMESPACE} || true
+
                 kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
                 sleep 30
                 kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
@@ -217,6 +224,7 @@ spec:
                 kubectl apply -f kubernetes/bank-service.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
+
                 sleep 90
                 kubectl get pods -n ${K8S_NAMESPACE} -o wide
               """
