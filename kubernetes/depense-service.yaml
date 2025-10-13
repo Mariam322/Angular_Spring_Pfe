@@ -31,3 +31,4 @@ spec:
   ports:
   - port: 8022
     targetPort: 8022
+  type: LoadBalancer
