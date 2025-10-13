@@ -1,11 +1,9 @@
 pipeline {
   agent none
-
   environment {
     DOCKER_REGISTRY = 'docker.io/mariammseddi12'
     K8S_NAMESPACE = 'default'
   }
-
   options {
     timeout(time: 60, unit: 'MINUTES')
     disableConcurrentBuilds()
@@ -31,8 +29,6 @@ metadata:
   labels:
     app: maven-pod
 spec:
-  serviceAccountName: default
-  restartPolicy: Never
   containers:
   - name: maven
     image: maven:3.9.9-eclipse-temurin-17
@@ -40,10 +36,21 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "256Mi"
+        memory: "1Gi"
+        cpu: "300m"
+      limits:
+        memory: "2Gi"
+        cpu: "700m"
+  - name: jnlp
+    image: jenkins/inbound-agent:latest
+    command: ["cat"]
+    tty: true
+    resources:
+      requests:
+        memory: "128Mi"
         cpu: "100m"
       limits:
-        memory: "512Mi"
+        memory: "256Mi"
         cpu: "200m"
 """
         }
@@ -73,8 +80,6 @@ metadata:
   labels:
     app: node-pod
 spec:
-  serviceAccountName: default
-  restartPolicy: Never
   containers:
   - name: node
     image: node:20
@@ -82,11 +87,22 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "512Mi"
-        cpu: "200m"
-      limits:
         memory: "1Gi"
-        cpu: "400m"
+        cpu: "300m"
+      limits:
+        memory: "2Gi"
+        cpu: "700m"
+  - name: jnlp
+    image: jenkins/inbound-agent:latest
+    command: ["cat"]
+    tty: true
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
 """
         }
       }
@@ -106,7 +122,7 @@ spec:
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
-              node --max-old-space-size=1536 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
+              node --max-old-space-size=1024 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
         }
@@ -123,12 +139,9 @@ metadata:
   labels:
     app: kaniko-pod
 spec:
-  serviceAccountName: default
-  restartPolicy: Never
   containers:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
-    imagePullPolicy: Always
     command: ["sleep"]
     args: ["9999999"]
     volumeMounts:
@@ -136,22 +149,33 @@ spec:
         mountPath: /kaniko/.docker
     resources:
       requests:
-        memory: "1Gi"
-        cpu: "400m"
+        memory: "2Gi"
+        cpu: "500m"
         ephemeral-storage: "10Gi"
       limits:
-        memory: "2Gi"
-        cpu: "800m"
+        memory: "4Gi"
+        cpu: "1000m"
         ephemeral-storage: "20Gi"
+  - name: jnlp
+    image: jenkins/inbound-agent:latest
+    command: ["cat"]
+    tty: true
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
   volumes:
-  - name: docker-config
-    projected:
-      sources:
-      - secret:
-          name: regcred
-          items:
-          - key: .dockerconfigjson
-            path: config.json
+    - name: docker-config
+      projected:
+        sources:
+        - secret:
+            name: regcred
+            items:
+            - key: .dockerconfigjson
+              path: config.json
 """
         }
       }
@@ -171,7 +195,6 @@ spec:
 
             for (svc in services) {
               echo "🚀 Building ${svc.name} image..."
-              sh "rm -rf /kaniko/.cache_${svc.name} || true"
               sh """
                 /kaniko/executor \
                   --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/${svc.path} \
@@ -199,8 +222,6 @@ metadata:
   labels:
     app: kubectl-pod
 spec:
-  serviceAccountName: default
-  restartPolicy: Never
   containers:
   - name: kubectl
     image: lachlanevenson/k8s-kubectl:v1.25.4
@@ -208,11 +229,22 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "128Mi"
-        cpu: "50m"
-      limits:
         memory: "256Mi"
         cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "200m"
+  - name: jnlp
+    image: jenkins/inbound-agent:latest
+    command: ["cat"]
+    tty: true
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
 """
         }
       }
@@ -225,6 +257,7 @@ spec:
                 kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
                 kubectl delete deployment --all -n ${K8S_NAMESPACE} || true
                 kubectl delete svc --all -n ${K8S_NAMESPACE} || true
+
                 kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
                 sleep 30
                 kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
@@ -235,6 +268,7 @@ spec:
                 kubectl apply -f kubernetes/bank-service.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
+
                 sleep 90
                 kubectl get pods -n ${K8S_NAMESPACE} -o wide
               """
