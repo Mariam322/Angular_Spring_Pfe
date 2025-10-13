@@ -16,6 +16,7 @@ pipeline {
         git url: 'https://github.com/Mariam322/Angular_Spring_Pfe.git', branch: 'main'
       }
     }
+
     stage('Build Angular Frontend') {
       agent {
         kubernetes {
@@ -65,6 +66,7 @@ spec:
         }
       }
     }
+
     stage('Build Java JARs') {
       agent {
         kubernetes {
@@ -96,12 +98,13 @@ spec:
         container('maven') {
           sh '''
             for module in EurekaCompain Gatway ProjetCompain Facturation Depense BanqueService ReglementAffectation; do
-              mvn -B -f $module/pom.xml clean package -DskipTests
+              mvn -B --file $module/pom.xml clean package -DskipTests
             done
           '''
         }
       }
     }
+
     stage('Build & Push Docker Images') {
       agent {
         kubernetes {
@@ -173,6 +176,7 @@ spec:
         }
       }
     }
+
     stage('Deploy to OVH Kubernetes') {
       agent {
         kubernetes {
@@ -222,6 +226,7 @@ spec:
       }
     }
   }
+
   post {
     success {
       echo '✅ Pipeline completed successfully (Build + Push + Deploy)'
