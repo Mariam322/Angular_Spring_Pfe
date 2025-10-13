@@ -40,11 +40,11 @@ spec:
     tty: true
     resources:
       requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
         memory: "512Mi"
         cpu: "200m"
-      limits:
-        memory: "1Gi"
-        cpu: "400m"
 """
         }
       }
