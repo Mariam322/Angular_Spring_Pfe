@@ -89,15 +89,22 @@ spec:
               npm config set legacy-peer-deps true
               npm install
               npm install @popperjs/core --save
+
               node -e "
                 const fs = require('fs');
                 const config = JSON.parse(fs.readFileSync('angular.json', 'utf8'));
-                const project = Object.keys(config.projects)[0];
-                if (config.projects[project]?.architect?.build?.configurations?.production?.budgets) {
-                  delete config.projects[project].architect.build.configurations.production.budgets;
+                for (const key in config.projects) {
+                  const proj = config.projects[key];
+                  if (proj.architect?.build?.configurations?.production?.budgets) {
+                    delete proj.architect.build.configurations.production.budgets;
+                  }
+                  if (proj.architect?.build?.budgets) {
+                    delete proj.architect.build.budgets;
+                  }
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
+
               node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
             '''
           }
