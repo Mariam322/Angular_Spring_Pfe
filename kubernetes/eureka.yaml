@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: eureka-server
+  labels:
+    app: eureka-server
 spec:
   replicas: 1
   selector:
@@ -22,7 +24,8 @@ spec:
           value: "eureka-server"
         - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
           value: "http://eureka-service:8761/eureka/"
----          
+
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -33,3 +36,4 @@ spec:
   ports:
   - port: 8761
     targetPort: 8761
+  type: LoadBalancer
