@@ -28,11 +28,11 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "512Mi"
-        cpu: "200m"
-      limits:
         memory: "1Gi"
-        cpu: "400m"
+        cpu: "300m"
+      limits:
+        memory: "2Gi"
+        cpu: "600m"
 
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
@@ -114,7 +114,7 @@ spec:
                 }
                 fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
               "
-              node --max-old-space-size=1536 ./node_modules/@angular/cli/bin/ng build --configuration=production --source-map=false
+              npm run build
             '''
           }
         }
