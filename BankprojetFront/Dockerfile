@@ -20,7 +20,7 @@ RUN npm rebuild esbuild
 COPY . .
 
 # Build Angular en production
-RUN npm run build -- --configuration production
+RUN npm run build
 
 # Étape 2 : Image finale légère Nginx
 FROM nginx:alpine
