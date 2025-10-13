@@ -207,16 +207,26 @@ spec:
           script {
             withKubeConfig([credentialsId: 'kubernetes-credentials-id']) {
               sh """
-                set -e
+                # Créer le namespace si nécessaire
                 kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
-                kubectl delete deployment -l app=myapp -n ${K8S_NAMESPACE} || true
-                kubectl delete svc -l app=myapp -n ${K8S_NAMESPACE} || true
+                
+                # Déployer/redéployer tous les services sans suppression préalable
                 for f in eureka gateway compain-service facturation-service depense-service bank-service reglementaffectation-service frontend; do
-                  kubectl apply -f kubernetes/$f.yaml -n ${K8S_NAMESPACE}
+                  echo "Deploying \$f..."
+                  kubectl apply -f kubernetes/\$f.yaml -n ${K8S_NAMESPACE}
                   sleep 10
                 done
+                
+                # Attendre que les pods soient prêts
+                echo "Waiting for pods to be ready..."
                 sleep 60
+                
+                # Vérifier l'état des déploiements
+                kubectl get deployments -n ${K8S_NAMESPACE} -o wide
+                echo ""
                 kubectl get pods -n ${K8S_NAMESPACE} -o wide
+                echo ""
+                kubectl get services -n ${K8S_NAMESPACE} -o wide
               """
             }
           }
@@ -235,4 +245,4 @@ spec:
       echo '🧹 Cleaning workspace...'
     }
   }
-} 
+}
