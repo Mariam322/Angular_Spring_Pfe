@@ -28,11 +28,11 @@ spec:
     tty: true
     resources:
       requests:
-        memory: "1Gi"
-        cpu: "300m"
+        memory: "512Mi"
+        cpu: "200m"
       limits:
-        memory: "3Gi"
-        cpu: "800m"
+        memory: "1Gi"
+        cpu: "400m"
 
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
@@ -44,12 +44,12 @@ spec:
       mountPath: /kaniko/.docker
     resources:
       requests:
-        memory: "4Gi"
-        cpu: "800m"
+        memory: "1Gi"
+        cpu: "400m"
         ephemeral-storage: "10Gi"
       limits:
-        memory: "6Gi"
-        cpu: "2"
+        memory: "2Gi"
+        cpu: "800m"
         ephemeral-storage: "20Gi"
 
   - name: kubectl
@@ -58,11 +58,11 @@ spec:
     tty: true
     resources:
       requests:
+        memory: "128Mi"
+        cpu: "50m"
+      limits:
         memory: "256Mi"
         cpu: "100m"
-      limits:
-        memory: "512Mi"
-        cpu: "200m"
 
   volumes:
   - name: docker-config
