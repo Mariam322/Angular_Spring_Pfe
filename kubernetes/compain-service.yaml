@@ -13,13 +13,19 @@ spec:
         app: compain-service
     spec:
       containers:
-      - name: compain-service
-        image: mariammseddi12/compain-service:latest
-        ports:
-        - containerPort: 8082
-        env:
-        - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
-          value: http://eureka-service:8761/eureka/
+        - name: compain-service
+          image: mariammseddi12/compain-service:latest
+          ports:
+            - containerPort: 8082
+          env:
+            - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+              value: http://eureka-service:8761/eureka/
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://compain-db-service:3306/compain_db
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: root
 ---
 apiVersion: v1
 kind: Service
@@ -29,6 +35,6 @@ spec:
   selector:
     app: compain-service
   ports:
-  - port: 8082
-    targetPort: 8082
+    - port: 8082
+      targetPort: 8082
   type: ClusterIP
