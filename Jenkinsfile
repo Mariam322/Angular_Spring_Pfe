@@ -179,6 +179,7 @@ spec:
                 echo "⚙️ Applying updated manifests..."
                 kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
+                kubectl apply -f kubernetes/compain-db.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/compain-service.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
 
