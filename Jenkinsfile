@@ -128,16 +128,12 @@ spec:
             mvn -B -f EurekaCompain/pom.xml clean package -DskipTests
             mvn -B -f Gatway/pom.xml clean package -DskipTests
             mvn -B -f ProjetCompain/pom.xml clean package -DskipTests
-            mvn -B -f Facturation/pom.xml clean package -DskipTests
-            mvn -B -f Depense/pom.xml clean package -DskipTests
-            mvn -B -f BanqueService/pom.xml clean package -DskipTests
-            mvn -B -f ReglementAffectation/pom.xml clean package -DskipTests
           '''
         }
       }
     }
 
-    stage('Build & Push Docker Images (Sequential)') {
+    stage('Build & Push Docker Images') {
       steps {
         container('kaniko') {
           script {
@@ -145,10 +141,6 @@ spec:
               [name: 'Eureka', path: 'EurekaCompain', image: 'eureka-server'],
               [name: 'Gateway', path: 'Gatway', image: 'gateway-service'],
               [name: 'Compain', path: 'ProjetCompain', image: 'compain-service'],
-              [name: 'Facturation', path: 'Facturation', image: 'facturation-service'],
-              [name: 'Depense', path: 'Depense', image: 'depense-service'],
-              [name: 'Bank', path: 'BanqueService', image: 'bank-service'],
-              [name: 'ReglementAffectation', path: 'ReglementAffectation', image: 'reglementaffectation-service'],
               [name: 'Angular', path: 'BankprojetFront', image: 'angular-frontend']
             ]
 
@@ -188,10 +180,6 @@ spec:
                 kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/compain-service.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/facturation-service.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/depense-service.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/bank-service.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
 
                 echo "⏳ Waiting for pods to start..."
@@ -200,7 +188,7 @@ spec:
                 echo "📋 Pods status:"
                 kubectl get pods -n ${K8S_NAMESPACE} -o wide
 
-                echo "✅ All services deployed successfully."
+                echo "✅ Selected services deployed successfully."
               """
             }
           }
@@ -211,7 +199,7 @@ spec:
 
   post {
     success {
-      echo '✅ Pipeline completed successfully (Build + Push + Deploy)'
+      echo '✅ Pipeline completed successfully (Eureka + Gateway + Compain + Angular)'
     }
     failure {
       echo '❌ Pipeline failed — check Jenkins logs for details.'
