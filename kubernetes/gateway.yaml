@@ -20,6 +20,7 @@ spec:
         env:
         - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
           value: "http://eureka-service:8761/eureka/"
+
 ---
 apiVersion: v1
 kind: Service
@@ -31,4 +32,4 @@ spec:
   ports:
   - port: 9090
     targetPort: 9090
-  type: LoadBalancer
+  type: LoadBalancer # accès externe
