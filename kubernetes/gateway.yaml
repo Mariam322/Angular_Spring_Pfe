@@ -16,7 +16,7 @@ spec:
       - name: gateway-service
         image: mariammseddi12/gateway-service:latest
         ports:
-        - containerPort: 9090
+        - containerPort: 9025
         env:
         - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
           value: "http://eureka-service:8761/eureka/"
@@ -30,6 +30,6 @@ spec:
   selector:
     app: gateway-service
   ports:
-  - port: 9090
-    targetPort: 9090
+  - port: 9025
+    targetPort: 9025
   type: LoadBalancer # accès externe
