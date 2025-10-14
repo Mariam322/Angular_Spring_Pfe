@@ -50,7 +50,7 @@ export const routes: Routes = [
         
         {
           path:'compain',
-          component:CompainComponent,canActivate: [AuthGuard]
+          component:CompainComponent
         },
     
         {
@@ -82,7 +82,7 @@ export const routes: Routes = [
 },
   {
       path:'listecompte',
-      component:CompteListComponent ,canActivate: [AuthGuard]
+      component:CompteListComponent
 },
 {
       path:'forgot-password',
@@ -112,28 +112,28 @@ component:OperationBancaireComponent
   },
   {
     path:'user',
-    component:UtilisateurComponent,canActivate: [AuthGuard]
+    component:UtilisateurComponent
   },
      {
     path:'ListeCompany',
-    component:OmpaignListComponent,canActivate: [AuthGuard]
+    component:OmpaignListComponent
   },
        {
     path:'ListeFacture',
-    component:ListeFactureComponent,canActivate: [AuthGuard]
+    component:ListeFactureComponent
   },
      {
     path:'ListeDepense',
-    component:ListeDepenseComponent,canActivate: [AuthGuard]
+    component:ListeDepenseComponent
   },
    
       {
     path:'addFacture',
-    component:AddFactureComponent,canActivate: [AuthGuard]
+    component:AddFactureComponent
   },
        {
     path:'ListeDocuments',
-    component:DocumentsComponent,canActivate: [AuthGuard]
+    component:DocumentsComponent
   },
   {
     path: 'auth/google/callback',
@@ -154,7 +154,7 @@ component:OperationBancaireComponent
   },
    {
     path:'Reglement',
-    component:ReglementComponent,canActivate: [AuthGuard]
+    component:ReglementComponent
   },
    {
     path:'espaceuser',
@@ -170,7 +170,7 @@ component:OperationBancaireComponent
   },
     {
     path:'Profile',
-    component:ProfileComponent,canActivate: [AuthGuard]
+    component:ProfileComponent
   },
   
 
