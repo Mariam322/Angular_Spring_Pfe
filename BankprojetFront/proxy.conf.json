@@ -7,7 +7,7 @@
   
   },
   "/api": {
-      "target": "https://esmm.systeo.tn",
+      "target": "https://keycloak.systeo.tn",
       "secure": false,
       "changeOrigin": true,
       "pathRewrite": {
