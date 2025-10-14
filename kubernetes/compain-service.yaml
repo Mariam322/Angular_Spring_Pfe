@@ -20,6 +20,7 @@ spec:
         env:
         - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
           value: "http://eureka-service:8761/eureka/"
+
 ---
 apiVersion: v1
 kind: Service
@@ -31,4 +32,4 @@ spec:
   ports:
   - port: 8082
     targetPort: 8082
-  type: LoadBalancer
+  type: ClusterIP # interne uniquement
