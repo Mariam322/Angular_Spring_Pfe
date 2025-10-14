@@ -1,35 +1,24 @@
-# Étape 1 : Build Angular
-FROM node:20-alpine AS build
+# Étape 1 : Image Node
+FROM node:20-alpine
 
-# Installer Python et Make pour node-gyp
+# Installer Python et make pour node-gyp si nécessaire
 RUN apk add --no-cache python3 make g++
 
-# Définir le dossier de travail
+# Dossier de travail
 WORKDIR /app
 
-# Copier les fichiers package.json et lock pour installer les dépendances
+# Copier package.json et package-lock.json
 COPY package*.json ./
 
-# Installation fiable sans cache et avec permissions root
+# Installer Angular CLI globalement et les dépendances
+RUN npm install -g @angular/cli@16.2.7
 RUN npm ci --legacy-peer-deps --no-cache --unsafe-perm=true
 
-# Corriger les erreurs esbuild (ETXTBSY / binaire verrouillé)
-RUN npm rebuild esbuild
-
-# Copier le reste du code source
+# Copier tout le code source
 COPY . .
 
-# Build Angular en production
-RUN npm run build
+# Exposer le port Angular (par défaut 4200)
+EXPOSE 4200
 
-# Étape 2 : Image finale légère Nginx
-FROM nginx:alpine
-
-# Copier les fichiers buildés depuis la première étape
-COPY --from=build /app/dist/bankprojet-front /usr/share/nginx/html
-
-# Exposer le port HTTP
-EXPOSE 80
-
-# Démarrer Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Lancer Angular en mode dev avec ng serve
+CMD ["ng", "serve", "--host", "0.0.0.0", "--port", "4200"]
