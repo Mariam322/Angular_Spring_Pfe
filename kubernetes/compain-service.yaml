@@ -20,14 +20,6 @@ spec:
         env:
         - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
           value: http://eureka-service:8761/eureka/
-        - name: SPRING_DATASOURCE_URL
-          value: jdbc:mysql://mariadb:3306/CompanyClt?createDatabaseIfNotExist=true
-        - name: SPRING_DATASOURCE_USERNAME
-          value: mariam
-        - name: SPRING_DATASOURCE_PASSWORD
-          value: 1234
-        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
-          value: "false"
 ---
 apiVersion: v1
 kind: Service
