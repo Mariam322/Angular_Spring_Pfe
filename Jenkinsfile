@@ -139,7 +139,7 @@ spec:
           script {
             echo "🚀 Starting deployment to local VPS Kubernetes cluster..."
 
-            withKubeConfig([credentialsId: 'kubernetes-credentials-id']) {
+            withKubeConfig([credentialsId: 'kubernetes-vps-config']) {
               sh """
                 set -e
                 echo "🧭 Using namespace: ${K8S_NAMESPACE}"
