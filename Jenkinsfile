@@ -14,25 +14,11 @@ spec:
     image: maven:3.9.9-eclipse-temurin-17
     command: ["cat"]
     tty: true
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu: "100m"
-      limits:
-        memory: "512Mi"
-        cpu: "200m"
 
   - name: node
     image: node:20
     command: ["cat"]
     tty: true
-    resources:
-      requests:
-        memory: "1Gi"
-        cpu: "300m"
-      limits:
-        memory: "2Gi"
-        cpu: "600m"
 
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
@@ -42,27 +28,11 @@ spec:
     volumeMounts:
       - name: docker-config
         mountPath: /kaniko/.docker
-    resources:
-      requests:
-        memory: "2Gi"
-        cpu: "500m"
-        ephemeral-storage: "10Gi"
-      limits:
-        memory: "6Gi"
-        cpu: "1200m"
-        ephemeral-storage: "20Gi"
 
   - name: kubectl
-    image: lachlanevenson/k8s-kubectl:v1.25.4
+    image: bitnami/kubectl:1.28
     command: ["cat"]
     tty: true
-    resources:
-      requests:
-        memory: "128Mi"
-        cpu: "50m"
-      limits:
-        memory: "256Mi"
-        cpu: "100m"
 
   volumes:
   - name: docker-config
@@ -149,26 +119,25 @@ spec:
               sh "rm -rf /kaniko/.cache_${svc.name} || true"
               sh """
                 /kaniko/executor \
-                  --context=dir:///home/jenkins/agent/workspace/Pipline_OVH/${svc.path} \
-                  --dockerfile=/home/jenkins/agent/workspace/Pipline_OVH/${svc.path}/Dockerfile \
+                  --context=dir://${WORKSPACE}/${svc.path} \
+                  --dockerfile=${WORKSPACE}/${svc.path}/Dockerfile \
                   --destination=${DOCKER_REGISTRY}/${svc.image}:latest \
                   --skip-tls-verify \
                   --snapshot-mode=redo \
                   --cache=true
               """
               echo "✅ ${svc.name} image built & pushed successfully."
-              sleep 5
             }
           }
         }
       }
     }
 
-    stage('Deploy to OVH Kubernetes') {
+    stage('Deploy to VPS Kubernetes') {
       steps {
         container('kubectl') {
           script {
-            echo "🚀 Starting deployment to OVH Kubernetes..."
+            echo "🚀 Starting deployment to local VPS Kubernetes cluster..."
 
             withKubeConfig([credentialsId: 'kubernetes-credentials-id']) {
               sh """
@@ -176,20 +145,16 @@ spec:
                 echo "🧭 Using namespace: ${K8S_NAMESPACE}"
                 kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
 
-                echo "⚙️ Applying updated manifests..."
+                echo "⚙️ Applying manifests..."
                 kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/compain-db.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/compain-service.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
 
-                echo "⏳ Waiting for pods to start..."
-                sleep 90
-
-                echo "📋 Pods status:"
+                echo "⏳ Waiting for pods..."
+                sleep 60
                 kubectl get pods -n ${K8S_NAMESPACE} -o wide
-
-                echo "✅ Selected services deployed successfully."
+                echo "✅ Deployment complete."
               """
             }
           }
@@ -200,7 +165,7 @@ spec:
 
   post {
     success {
-      echo '✅ Pipeline completed successfully (Eureka + Gateway + Compain + Angular)'
+      echo '✅ Pipeline completed successfully on VPS (Eureka + Gateway + Compain + Angular)'
     }
     failure {
       echo '❌ Pipeline failed — check Jenkins logs for details.'
