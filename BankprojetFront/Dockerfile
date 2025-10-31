@@ -9,9 +9,11 @@ RUN ng build --configuration production
 
 # Étape 2 : Serveur NGINX
 FROM nginx:alpine
-# Copier les fichiers Angular buildés
-COPY --from=build /app/dist /usr/share/nginx/html
-# Copier la configuration nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# SUPPRIMER la configuration par défaut
+RUN rm /etc/nginx/conf.d/default.conf
+# COPIER les fichiers Angular
+COPY --from=build /app/dist/bankprojet-front/ /usr/share/nginx/html/
+# COPIER votre configuration nginx
+COPY nginx.conf /etc/nginx/conf.d/
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
