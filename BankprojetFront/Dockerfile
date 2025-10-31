@@ -1,30 +1,17 @@
-# Étape 1 : Image Node
-FROM node:20-alpine
-
-# Installer Python et make pour node-gyp si nécessaire
-RUN apk add --no-cache python3 make g++
-
-# Dossier de travail
+# Étape 1 : Build Angular
+FROM node:20-alpine AS build
 WORKDIR /app
-
-# Copier package.json et package-lock.json
 COPY package*.json ./
-
-# Installer Angular CLI globalement et les dépendances
 RUN npm install -g @angular/cli@16.2.7
-RUN npm ci --legacy-peer-deps --no-cache --unsafe-perm=true
-
-# Copier tout le code source
+RUN npm ci --legacy-peer-deps
 COPY . .
-
-# Construire l'application Angular (production)
 RUN ng build --configuration production
 
-# Étape 2 : Serveur NGINX pour héberger le build (au lieu de ng serve)
+# Étape 2 : Serveur NGINX
 FROM nginx:alpine
-COPY --from=0 /app/dist /usr/share/nginx/html
-
-# Exposer le port 80 (serveur HTTP standard)
+# Copier les fichiers Angular buildés
+COPY --from=build /app/dist /usr/share/nginx/html
+# Copier la configuration nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
-
 CMD ["nginx", "-g", "daemon off;"]
