@@ -33,6 +33,6 @@ spec:
     app: angular-frontend
   ports:
   - port: 80
-    targetPort: 80  # ← CHANGER 4200 → 80 (nginx)
+    targetPort: 4200  # ← CHANGER 4200 → 80 (nginx)
   type: LoadBalancer
   loadBalancerIP: 51.210.7.4
