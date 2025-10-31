@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gateway-service
+  labels:
+    app: gateway-service
 spec:
   replicas: 1
   selector:
@@ -20,16 +22,17 @@ spec:
         env:
         - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
           value: "http://eureka-service:8761/eureka/"
-
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: gateway-service
+  annotations:
+    metallb.universe.tf/address-pool: microservice-pool
 spec:
   selector:
     app: gateway-service
   ports:
   - port: 9025
     targetPort: 9025
-  type: LoadBalancer # accès externe
+  type: LoadBalancer
