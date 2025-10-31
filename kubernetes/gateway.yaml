@@ -29,6 +29,7 @@ metadata:
   name: gateway-service
   annotations:
     metallb.universe.tf/address-pool: microservice-pool
+    metallb.io/allow-shared-ip: "vps-shared-ip"
 spec:
   selector:
     app: gateway-service
