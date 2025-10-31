@@ -26,6 +26,7 @@ spec:
               value: root
             - name: SPRING_DATASOURCE_PASSWORD
               value: root
+
 ---
 apiVersion: v1
 kind: Service
