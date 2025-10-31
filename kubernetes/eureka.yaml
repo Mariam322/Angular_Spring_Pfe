@@ -21,7 +21,7 @@ spec:
         - containerPort: 8761
         env:
         - name: EUREKA_INSTANCE_HOSTNAME
-          value: "eureka-server"
+          value: "eureka-service"
         - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
           value: "http://eureka-service:8761/eureka/"
 ---
@@ -35,6 +35,6 @@ spec:
   selector:
     app: eureka-server
   ports:
-  - port: 80
+  - port: 8761          # port externe = port interne
     targetPort: 8761
   type: LoadBalancer
