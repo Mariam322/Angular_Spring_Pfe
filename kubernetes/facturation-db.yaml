@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: facturation-db
+  labels:
+    app: facturation-db
 spec:
   replicas: 1
   selector:
@@ -12,6 +14,8 @@ spec:
       labels:
         app: facturation-db
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8s-microservice-worker
       containers:
         - name: mariadb
           image: mariadb:10.11
@@ -22,6 +26,24 @@ spec:
               value: facturation_db
           ports:
             - containerPort: 3306
+          volumeMounts:
+            - name: facturation-db-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: facturation-db-storage
+          persistentVolumeClaim:
+            claimName: facturation-db-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: facturation-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
