@@ -30,8 +30,7 @@ spec:
               value: "root"
             - name: SPRING_DATASOURCE_PASSWORD
               value: "root"
-            - name: SPRING_APPLICATION_NAME
-              value: "BankService"
+            
 ---
 apiVersion: v1
 kind: Service
