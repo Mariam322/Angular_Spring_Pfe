@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: depense-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: depense-db
+  template:
+    metadata:
+      labels:
+        app: depense-db
+    spec:
+      containers:
+        - name: mariadb
+          image: mariadb:10.11
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: root
+            - name: MYSQL_DATABASE
+              value: depense_db
+          ports:
+            - containerPort: 3306
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: depense-db-service
+spec:
+  selector:
+    app: depense-db
+  ports:
+    - port: 3306
+      targetPort: 3306
+  type: ClusterIP
