@@ -145,7 +145,7 @@ spec:
       steps {
         container('kubectl') {
           script {
-            echo "🚀 Starting deployment to VPS Kubernetes cluster..."
+            echo "🚀 Starting deployment to local VPS Kubernetes cluster..."
 
             withKubeConfig([credentialsId: 'kubernetes-vps-config']) {
               sh """
@@ -153,19 +153,7 @@ spec:
                 echo "🧭 Using namespace: ${K8S_NAMESPACE}"
                 kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
 
-                echo "⚙️ Applying Kubernetes manifests..."
-
-                # 1️⃣ Déployer les bases de données d'abord
-                kubectl apply -f kubernetes/compain-db.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/bank-db.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/depense-db.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/facturation-db.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/reglemetnaffecatation-db.yaml -n ${K8S_NAMESPACE}
-
-                echo "⏳ Waiting for databases to initialize..."
-                sleep 40
-
-                # 2️⃣ Déployer les microservices Spring Boot
+                echo "⚙️ Applying manifests..."
                 kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/compain-service.yaml -n ${K8S_NAMESPACE}
@@ -173,15 +161,12 @@ spec:
                 kubectl apply -f kubernetes/depense-service.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/facturation-service.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
-
-                echo "⏳ Waiting for microservices to register with Eureka..."
-                sleep 60
-
-                # 3️⃣ Déployer le frontend Angular
                 kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
 
-                echo "✅ Deployment complete."
+                echo "⏳ Waiting for pods..."
+                sleep 60
                 kubectl get pods -n ${K8S_NAMESPACE} -o wide
+                echo "✅ Deployment complete."
               """
             }
           }
@@ -192,7 +177,7 @@ spec:
 
   post {
     success {
-      echo '✅ Pipeline completed successfully (DBs + Eureka + Gateway + Services + Frontend)'
+      echo '✅ Pipeline completed successfully on VPS (Eureka + Gateway + Compain + Bank + Depense + Facturation + ReglementAffectation + Angular)'
     }
     failure {
       echo '❌ Pipeline failed — check Jenkins logs for details.'
