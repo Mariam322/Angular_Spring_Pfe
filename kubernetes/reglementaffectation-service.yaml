@@ -15,7 +15,7 @@ spec:
         app: reglemetnaffecatation-service
     spec:
       nodeSelector:
-        kubernetes.io/hostname: k8s-microservice-worker   # ✅ Force le bon nœud
+        kubernetes.io/hostname: k8s-microservice-worker
       containers:
         - name: reglemetnaffecatation-service
           image: mariammseddi12/reglemetnaffecatation-service:latest
@@ -30,13 +30,15 @@ spec:
               value: "root"
             - name: SPRING_DATASOURCE_PASSWORD
               value: "root"
+            - name: SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED
+              value: "false"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: reglemetnaffecatation-service
   annotations:
-    metallb.universe.tf/allow-shared-ip: "shared-ip"   # ✅ pour partager l’IP publique
+    metallb.universe.tf/allow-shared-ip: "shared-ip"
 spec:
   selector:
     app: reglemetnaffecatation-service
@@ -44,4 +46,4 @@ spec:
     - port: 8025
       targetPort: 8025
   type: LoadBalancer
-  loadBalancerIP: 51.210.7.4   # ✅ même IP MetalLB partagée
+  loadBalancerIP: 51.210.7.4
