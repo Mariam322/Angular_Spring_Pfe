@@ -98,6 +98,10 @@ spec:
             mvn -B -f EurekaCompain/pom.xml clean package -DskipTests
             mvn -B -f Gatway/pom.xml clean package -DskipTests
             mvn -B -f ProjetCompain/pom.xml clean package -DskipTests
+            mvn -B -f BanqueService/pom.xml clean package -DskipTests
+            mvn -B -f Depense/pom.xml clean package -DskipTests
+            mvn -B -f Facturation/pom.xml clean package -DskipTests
+            mvn -B -f ReglementAffectation/pom.xml clean package -DskipTests
           '''
         }
       }
@@ -111,6 +115,10 @@ spec:
               [name: 'Eureka', path: 'EurekaCompain', image: 'eureka-server'],
               [name: 'Gateway', path: 'Gatway', image: 'gateway-service'],
               [name: 'Compain', path: 'ProjetCompain', image: 'compain-service'],
+              [name: 'Bank', path: 'BanqueService', image: 'bank-service'],
+              [name: 'Depense', path: 'Depense', image: 'depense-service'],
+              [name: 'Facturation', path: 'Facturation', image: 'facturation-service'],
+              [name: 'ReglementAffectation', path: 'ReglementAffectation', image: 'reglementaffectation-service'],
               [name: 'Angular', path: 'BankprojetFront', image: 'angular-frontend']
             ]
 
@@ -149,6 +157,10 @@ spec:
                 kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/compain-service.yaml -n ${K8S_NAMESPACE}
+                kubectl apply -f kubernetes/bank-service.yaml -n ${K8S_NAMESPACE}
+                kubectl apply -f kubernetes/depense-service.yaml -n ${K8S_NAMESPACE}
+                kubectl apply -f kubernetes/facturation-service.yaml -n ${K8S_NAMESPACE}
+                kubectl apply -f kubernetes/reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
 
                 echo "⏳ Waiting for pods..."
@@ -165,7 +177,7 @@ spec:
 
   post {
     success {
-      echo '✅ Pipeline completed successfully on VPS (Eureka + Gateway + Compain + Angular)'
+      echo '✅ Pipeline completed successfully on VPS (Eureka + Gateway + Compain + Bank + Depense + Facturation + ReglementAffectation + Angular)'
     }
     failure {
       echo '❌ Pipeline failed — check Jenkins logs for details.'
