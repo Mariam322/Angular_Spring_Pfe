@@ -15,30 +15,32 @@ spec:
         app: reglementaffectation-service
     spec:
       nodeSelector:
-        kubernetes.io/hostname: k8s-microservice-worker
+        kubernetes.io/hostname: k8s-microservice-worker   # ✅ Force sur le bon nœud
       containers:
-        - name: reglemetnaffecatation-service
-          image: mariammseddi12/reglemetnaffecatation-service:latest
+        - name: reglementaffectation-service
+          image: mariammseddi12/reglementaffectation-service:latest
           ports:
             - containerPort: 8025
           env:
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
               value: "http://eureka-service:8761/eureka/"
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:mysql://reglemetnaffecatation-db-service:3306/reglemetnaffecatation_db"
+              value: "jdbc:mysql://reglementaffectation-db-service:3306/reglementaffectation_db"
             - name: SPRING_DATASOURCE_USERNAME
               value: "root"
             - name: SPRING_DATASOURCE_PASSWORD
               value: "root"
             - name: SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED
               value: "false"
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
   name: reglementaffectation-service
   annotations:
-    metallb.universe.tf/allow-shared-ip: "shared-ip"
+    metallb.universe.tf/allow-shared-ip: "shared-ip"  
 spec:
   selector:
     app: reglementaffectation-service
