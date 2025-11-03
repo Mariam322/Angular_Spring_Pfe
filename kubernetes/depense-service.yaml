@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: depense-service
+  labels:
+    app: depense-service
 spec:
   replicas: 1
   selector:
@@ -12,6 +14,8 @@ spec:
       labels:
         app: depense-service
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8s-microservice-worker
       containers:
         - name: depense-service
           image: mariammseddi12/depense-service:latest
@@ -21,20 +25,23 @@ spec:
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
               value: "http://eureka-service:8761/eureka/"
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:mysql://depense-db-service:3306/depense_db
+              value: "jdbc:mysql://depense-db-service:3306/depense_db"
             - name: SPRING_DATASOURCE_USERNAME
-              value: root
+              value: "root"
             - name: SPRING_DATASOURCE_PASSWORD
-              value: root
+              value: "root"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: depense-service
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "shared-ip"
 spec:
   selector:
     app: depense-service
   ports:
     - port: 8022
       targetPort: 8022
-  type: ClusterIP
+  type: LoadBalancer
+  loadBalancerIP: 51.210.7.4
