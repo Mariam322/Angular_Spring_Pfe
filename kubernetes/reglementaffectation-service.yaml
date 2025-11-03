@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: reglemetnaffecatation-service
+  name: reglementaffectation-service
   labels:
-    app: reglemetnaffecatation-service
+    app: reglementaffectation-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: reglemetnaffecatation-service
+      app: reglementaffectation-service
   template:
     metadata:
       labels:
-        app: reglemetnaffecatation-service
+        app: reglementaffectation-service
     spec:
       nodeSelector:
         kubernetes.io/hostname: k8s-microservice-worker
@@ -36,12 +36,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: reglemetnaffecatation-service
+  name: reglementaffectation-service
   annotations:
     metallb.universe.tf/allow-shared-ip: "shared-ip"
 spec:
   selector:
-    app: reglemetnaffecatation-service
+    app: reglementaffectation-service
   ports:
     - port: 8025
       targetPort: 8025
