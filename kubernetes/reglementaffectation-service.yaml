@@ -13,13 +13,19 @@ spec:
         app: reglemetnaffecatation-service
     spec:
       containers:
-      - name: reglemetnaffecatation-service
-        image: mariammseddi12/reglemetnaffecatation-service:latest
-        ports:
-        - containerPort: 8025
-        env:
-        - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
-          value: "http://eureka-service:8761/eureka/"
+        - name: reglemetnaffecatation-service
+          image: mariammseddi12/reglemetnaffecatation-service:latest
+          ports:
+            - containerPort: 8025
+          env:
+            - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+              value: "http://eureka-service:8761/eureka/"
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://reglemetnaffecatation-db-service:3306/reglemetnaffecatation_db
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: root
 ---
 apiVersion: v1
 kind: Service
@@ -29,6 +35,6 @@ spec:
   selector:
     app: reglemetnaffecatation-service
   ports:
-  - port: 8025
-    targetPort: 8025
-  type: LoadBalancer
+    - port: 8025
+      targetPort: 8025
+  type: ClusterIP
