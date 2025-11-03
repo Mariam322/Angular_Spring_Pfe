@@ -15,7 +15,7 @@ spec:
         app: bank-service
     spec:
       nodeSelector:
-        kubernetes.io/hostname: k8s-microservice-worker
+        kubernetes.io/hostname: k8s-microservice-worker   # ✅ Force sur le bon nœud
       containers:
         - name: bank-service
           image: mariammseddi12/bank-service:latest
@@ -30,6 +30,8 @@ spec:
               value: "root"
             - name: SPRING_DATASOURCE_PASSWORD
               value: "root"
+            - name: SPRING_APPLICATION_NAME
+              value: "BankService"
 ---
 apiVersion: v1
 kind: Service
