@@ -13,13 +13,19 @@ spec:
         app: bank-service
     spec:
       containers:
-      - name: bank-service
-        image: mariammseddi12/bank-service:latest
-        ports:
-        - containerPort: 8021
-        env:
-        - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
-          value: "http://eureka-service:8761/eureka/"
+        - name: bank-service
+          image: mariammseddi12/bank-service:latest
+          ports:
+            - containerPort: 8021
+          env:
+            - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+              value: "http://eureka-service:8761/eureka/"
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://bank-db-service:3306/bank_db
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: root
 ---
 apiVersion: v1
 kind: Service
@@ -29,6 +35,6 @@ spec:
   selector:
     app: bank-service
   ports:
-  - port: 8021
-    targetPort: 8021
-  type: LoadBalancer
+    - port: 8021
+      targetPort: 8021
+  type: ClusterIP
