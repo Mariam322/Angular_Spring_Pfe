@@ -15,7 +15,7 @@ spec:
         app: reglementaffectation-service
     spec:
       nodeSelector:
-        kubernetes.io/hostname: k8s-microservice-worker
+        kubernetes.io/hostname: k8s-microservice-worker   # ✅ Force sur le bon nœud
       containers:
         - name: reglementaffectation-service
           image: mariammseddi12/reglementaffectation-service:latest
@@ -30,15 +30,14 @@ spec:
               value: "root"
             - name: SPRING_DATASOURCE_PASSWORD
               value: "root"
-            - name: SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED
-              value: "false"
+            
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: reglementaffectation-service
   annotations:
-    metallb.universe.tf/allow-shared-ip: "shared-ip"
+    metallb.universe.tf/allow-shared-ip: "shared-ip"  
 spec:
   selector:
     app: reglementaffectation-service
