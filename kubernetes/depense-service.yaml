@@ -15,7 +15,7 @@ spec:
         app: depense-service
     spec:
       nodeSelector:
-        kubernetes.io/hostname: k8s-microservice-worker   # ✅ Force sur le bon nœud
+        kubernetes.io/hostname: k8s-microservice-worker
       containers:
         - name: depense-service
           image: mariammseddi12/depense-service:latest
@@ -30,7 +30,6 @@ spec:
               value: "root"
             - name: SPRING_DATASOURCE_PASSWORD
               value: "root"
-           
 ---
 apiVersion: v1
 kind: Service
