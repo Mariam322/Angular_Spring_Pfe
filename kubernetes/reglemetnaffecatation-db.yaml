@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: reglemetnaffecatation-db
+  name: reglementaffectation-db
   labels:
-    app: reglemetnaffecatation-db
+    app: reglementaffectation-db
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: reglemetnaffecatation-db
+      app: reglementaffectation-db
   template:
     metadata:
       labels:
-        app: reglemetnaffecatation-db
+        app: reglementaffectation-db
     spec:
       nodeSelector:
-        kubernetes.io/hostname: k8s-microservice-worker   # ✅ même nœud
+        kubernetes.io/hostname: k8s-microservice-worker   # ✅ même nœud que les autres microservices
       containers:
         - name: mariadb
           image: mariadb:10.11
@@ -23,21 +23,21 @@ spec:
             - name: MYSQL_ROOT_PASSWORD
               value: root
             - name: MYSQL_DATABASE
-              value: reglemetnaffecatation_db
+              value: reglementaffectation_db
           ports:
             - containerPort: 3306
           volumeMounts:
-            - name: reglemetnaffecatation-db-storage
+            - name: reglementaffectation-db-storage
               mountPath: /var/lib/mysql
       volumes:
-        - name: reglemetnaffecatation-db-storage
+        - name: reglementaffectation-db-storage
           persistentVolumeClaim:
-            claimName: reglemetnaffecatation-db-pvc
+            claimName: reglementaffectation-db-pvc
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: reglemetnaffecatation-db-pvc
+  name: reglementaffectation-db-pvc
 spec:
   accessModes:
     - ReadWriteOnce
@@ -48,10 +48,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: reglemetnaffecatation-db-service
+  name: reglementaffectation-db-service
 spec:
   selector:
-    app: reglemetnaffecatation-db
+    app: reglementaffectation-db
   ports:
     - port: 3306
       targetPort: 3306
