@@ -13,13 +13,19 @@ spec:
         app: facturation-service
     spec:
       containers:
-      - name: facturation-service
-        image: mariammseddi12/facturation-service:latest
-        ports:
-        - containerPort: 8024
-        env:
-        - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
-          value: "http://eureka-service:8761/eureka/"
+        - name: facturation-service
+          image: mariammseddi12/facturation-service:latest
+          ports:
+            - containerPort: 8024
+          env:
+            - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+              value: "http://eureka-service:8761/eureka/"
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://facturation-db-service:3306/facturation_db
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: root
 ---
 apiVersion: v1
 kind: Service
@@ -29,6 +35,6 @@ spec:
   selector:
     app: facturation-service
   ports:
-  - port: 8024
-    targetPort: 8024
-  type: LoadBalancer
+    - port: 8024
+      targetPort: 8024
+  type: ClusterIP
