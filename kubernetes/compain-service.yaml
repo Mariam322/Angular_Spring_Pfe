@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: compain-service
+  labels:
+    app: compain-service
 spec:
   replicas: 1
   selector:
@@ -12,6 +14,8 @@ spec:
       labels:
         app: compain-service
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8s-microservice-worker   # ✅ Force sur le bon nœud
       containers:
         - name: compain-service
           image: mariammseddi12/compain-service:latest
@@ -19,23 +23,27 @@ spec:
             - containerPort: 8082
           env:
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
-              value: http://eureka-service:8761/eureka/
+              value: "http://eureka-service:8761/eureka/"
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:mysql://compain-db-service:3306/compain_db
+              value: "jdbc:mysql://compain-db-service:3306/compain_db"
             - name: SPRING_DATASOURCE_USERNAME
-              value: root
+              value: "root"
             - name: SPRING_DATASOURCE_PASSWORD
-              value: root
+              value: "root"
 
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
   name: compain-service
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "shared-ip"  
 spec:
   selector:
     app: compain-service
   ports:
     - port: 8082
       targetPort: 8082
-  type: ClusterIP
+  type: LoadBalancer
+  loadBalancerIP: 51.210.7.4  
