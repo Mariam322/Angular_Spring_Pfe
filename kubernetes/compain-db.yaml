@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: compain-db
+  labels:
+    app: compain-db
 spec:
   replicas: 1
   selector:
@@ -12,6 +14,8 @@ spec:
       labels:
         app: compain-db
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8s-microservice-worker   # ✅ même nœud que les microservices
       containers:
         - name: mariadb
           image: mariadb:10.11
@@ -22,6 +26,24 @@ spec:
               value: compain_db
           ports:
             - containerPort: 3306
+          volumeMounts:
+            - name: compain-db-storage
+              mountPath: /var/lib/mysql   # ✅ data persistantes
+      volumes:
+        - name: compain-db-storage
+          persistentVolumeClaim:
+            claimName: compain-db-pvc      # ✅ on lie un PVC (voir ci-dessous)
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: compain-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi   # ✅ tu peux ajuster (1Gi, 5Gi, etc.)
 ---
 apiVersion: v1
 kind: Service
