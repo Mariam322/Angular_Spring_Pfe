@@ -15,7 +15,7 @@ spec:
         app: reglementaffectation-db
     spec:
       nodeSelector:
-        kubernetes.io/hostname: k8s-microservice-worker   # ✅ même nœud que les autres microservices
+        kubernetes.io/hostname: k8s-microservice-worker
       containers:
         - name: mariadb
           image: mariadb:10.11
