@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: facturation-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: facturation-db
+  template:
+    metadata:
+      labels:
+        app: facturation-db
+    spec:
+      containers:
+        - name: mariadb
+          image: mariadb:10.11
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: root
+            - name: MYSQL_DATABASE
+              value: facturation_db
+          ports:
+            - containerPort: 3306
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: facturation-db-service
+spec:
+  selector:
+    app: facturation-db
+  ports:
+    - port: 3306
+      targetPort: 3306
+  type: ClusterIP
