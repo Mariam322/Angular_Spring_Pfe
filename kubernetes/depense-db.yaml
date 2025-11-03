@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: depense-db
+  labels:
+    app: depense-db
 spec:
   replicas: 1
   selector:
@@ -12,6 +14,8 @@ spec:
       labels:
         app: depense-db
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8s-microservice-worker
       containers:
         - name: mariadb
           image: mariadb:10.11
@@ -22,6 +26,24 @@ spec:
               value: depense_db
           ports:
             - containerPort: 3306
+          volumeMounts:
+            - name: depense-db-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: depense-db-storage
+          persistentVolumeClaim:
+            claimName: depense-db-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: depense-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
