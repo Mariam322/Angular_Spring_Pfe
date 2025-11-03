@@ -160,7 +160,7 @@ spec:
                 kubectl apply -f kubernetes/bank-db.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/depense-db.yaml -n ${K8S_NAMESPACE}
                 kubectl apply -f kubernetes/facturation-db.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/reglementaffectation-db.yaml -n ${K8S_NAMESPACE}
+                kubectl apply -f kubernetes/reglemetnaffecatation-db.yaml -n ${K8S_NAMESPACE}
 
                 echo "⏳ Waiting for databases to initialize..."
                 sleep 40
