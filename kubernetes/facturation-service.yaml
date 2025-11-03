@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: facturation-service
+  labels:
+    app: facturation-service
 spec:
   replicas: 1
   selector:
@@ -12,6 +14,8 @@ spec:
       labels:
         app: facturation-service
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8s-microservice-worker
       containers:
         - name: facturation-service
           image: mariammseddi12/facturation-service:latest
@@ -21,20 +25,23 @@ spec:
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
               value: "http://eureka-service:8761/eureka/"
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:mysql://facturation-db-service:3306/facturation_db
+              value: "jdbc:mysql://facturation-db-service:3306/facturation_db"
             - name: SPRING_DATASOURCE_USERNAME
-              value: root
+              value: "root"
             - name: SPRING_DATASOURCE_PASSWORD
-              value: root
+              value: "root"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: facturation-service
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "shared-ip"
 spec:
   selector:
     app: facturation-service
   ports:
     - port: 8024
       targetPort: 8024
-  type: ClusterIP
+  type: LoadBalancer
+  loadBalancerIP: 51.210.7.4
