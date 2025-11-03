@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: reglemetnaffecatation-db
+  labels:
+    app: reglemetnaffecatation-db
 spec:
   replicas: 1
   selector:
@@ -12,6 +14,8 @@ spec:
       labels:
         app: reglemetnaffecatation-db
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8s-microservice-worker   # ✅ même nœud
       containers:
         - name: mariadb
           image: mariadb:10.11
@@ -22,6 +26,24 @@ spec:
               value: reglemetnaffecatation_db
           ports:
             - containerPort: 3306
+          volumeMounts:
+            - name: reglemetnaffecatation-db-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: reglemetnaffecatation-db-storage
+          persistentVolumeClaim:
+            claimName: reglemetnaffecatation-db-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: reglemetnaffecatation-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
