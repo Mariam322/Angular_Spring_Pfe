@@ -15,7 +15,7 @@ spec:
         app: facturation-service
     spec:
       nodeSelector:
-        kubernetes.io/hostname: k8s-microservice-worker
+        kubernetes.io/hostname: k8s-microservice-worker   # ✅ Même nœud que les autres microservices
       containers:
         - name: facturation-service
           image: mariammseddi12/facturation-service:latest
@@ -30,6 +30,7 @@ spec:
               value: "root"
             - name: SPRING_DATASOURCE_PASSWORD
               value: "root"
+           
 ---
 apiVersion: v1
 kind: Service
@@ -42,6 +43,4 @@ spec:
     app: facturation-service
   ports:
     - port: 8024
-      targetPort: 8024
-  type: LoadBalancer
-  loadBalancerIP: 51.210.7.4
+      targetPort: 8
