@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: reglemetnaffecatation-service
+  labels:
+    app: reglemetnaffecatation-service
 spec:
   replicas: 1
   selector:
@@ -12,6 +14,8 @@ spec:
       labels:
         app: reglemetnaffecatation-service
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8s-microservice-worker   # ✅ Force le bon nœud
       containers:
         - name: reglemetnaffecatation-service
           image: mariammseddi12/reglemetnaffecatation-service:latest
@@ -21,20 +25,23 @@ spec:
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
               value: "http://eureka-service:8761/eureka/"
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:mysql://reglemetnaffecatation-db-service:3306/reglemetnaffecatation_db
+              value: "jdbc:mysql://reglemetnaffecatation-db-service:3306/reglemetnaffecatation_db"
             - name: SPRING_DATASOURCE_USERNAME
-              value: root
+              value: "root"
             - name: SPRING_DATASOURCE_PASSWORD
-              value: root
+              value: "root"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: reglemetnaffecatation-service
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "shared-ip"   # ✅ pour partager l’IP publique
 spec:
   selector:
     app: reglemetnaffecatation-service
   ports:
     - port: 8025
       targetPort: 8025
-  type: ClusterIP
+  type: LoadBalancer
+  loadBalancerIP: 51.210.7.4   # ✅ même IP MetalLB partagée
