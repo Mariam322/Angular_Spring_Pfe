@@ -6,6 +6,11 @@
     "logLevel": "debug"
   
   },
+  "/banqueservice": {
+    "target": "https://api.angular-vps.systeo.tn",
+    "secure": true,
+    "changeOrigin": true
+  },
   "/api": {
       "target": "https://keycloak.systeo.tn",
       "secure": false,
