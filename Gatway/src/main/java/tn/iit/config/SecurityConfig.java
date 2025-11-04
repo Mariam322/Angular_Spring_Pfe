@@ -58,7 +58,7 @@ public class SecurityConfig {
 
  .headers(headers -> headers
             .contentSecurityPolicy(csp -> csp
-                .policyDirectives("default-src 'self' https://m1.systeo.tn; script-src 'self' 'unsafe-inline' https://m1.systeo.tn; style-src 'self' 'unsafe-inline' https://m1.systeo.tn")
+                .policyDirectives("default-src 'self' https://api.angular-vps.systeo.tn; script-src 'self' 'unsafe-inline' https://api.angular-vps.systeo.tn; style-src 'self' 'unsafe-inline' https://api.angular-vps.systeo.tn")
             )
         )
 
@@ -68,7 +68,7 @@ public class SecurityConfig {
     @Bean
 CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "https://m1.systeo.tn", "https://esmm.systeo.tn"));
+    configuration.setAllowedOrigins(Arrays.asList("https://angular-vps.systeo.tn", "https://api.angular-vps.systeo.tn", "https://esmm.systeo.tn"));
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"));
     configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
     configuration.setExposedHeaders(Arrays.asList("X-Get-Header", "Authorization", "Content-Disposition"));
