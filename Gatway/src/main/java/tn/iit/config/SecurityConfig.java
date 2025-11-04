@@ -1,24 +1,17 @@
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.Customizer;
-import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.http.HttpMethod;
-
+import org.springframework.http.HttpStatus;
 import java.util.Arrays;
 
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableReactiveMethodSecurity
 @Configuration
-@EnableWebFluxSecurity
 public class SecurityConfig {
 
     private final JwtAuthConverter jwtAuthConverter;
@@ -33,7 +26,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeExchange(exchanges -> exchanges
-                // Allow OPTIONS requests for all endpoints (important for CORS preflight)
+                // Allow OPTIONS requests for all endpoints (CORS preflight)
                 .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 
                 // Public endpoints
@@ -57,23 +50,23 @@ public class SecurityConfig {
                 .pathMatchers("/projetcompain/**", "/facturation/**", "/banqueservice/**").authenticated()
                 .anyExchange().authenticated()
             )
-            .oauth2Login(Customizer.withDefaults())
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt
                     .jwkSetUri("https://esmm.systeo.tn/realms/projectPFE/protocol/openid-connect/certs")
                     .jwtAuthenticationConverter(new ReactiveJwtAuthenticationConverterAdapter(jwtAuthConverter))
                 )
-            )
-            .headers(headers -> headers
-                .contentSecurityPolicy(csp -> csp
-                    .policyDirectives("default-src 'self' https://api.angular-vps.systeo.tn; script-src 'self' 'unsafe-inline' https://api.angular-vps.systeo.tn; style-src 'self' 'unsafe-inline' https://api.angular-vps.systeo.tn")
-                )
+                .authenticationEntryPoint((exchange, exception) -> {
+                    // Custom handling for 401 responses
+                    return Mono.fromRunnable(() -> {
+                        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                    });
+                })
             )
             .build();
     }
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
             "https://angular-vps.systeo.tn", 
@@ -88,7 +81,7 @@ public class SecurityConfig {
             "Access-Control-Request-Method", "Access-Control-Request-Headers"
         ));
         configuration.setExposedHeaders(Arrays.asList(
-            "X-Get-Header", "Authorization", "Content-Disposition"
+            "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials", "Authorization"
         ));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
@@ -97,6 +90,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
-    // Remove the duplicate CorsWebFilter bean - it's not needed when using .cors()
 }
