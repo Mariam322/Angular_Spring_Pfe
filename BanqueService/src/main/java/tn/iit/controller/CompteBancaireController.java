@@ -15,10 +15,13 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+
 
 @RestController
 @AllArgsConstructor
 @Slf4j
+@CrossOrigin(origins = "https://angular-vps.systeo.tn")
 @Tag(name = "Gestion des comptes bancaires", description = "API pour les operations sur les comptes bancaires")
 public class CompteBancaireController {
 
