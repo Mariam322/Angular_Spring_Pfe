@@ -11,6 +11,7 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.Customizer;
+import org.springframework.web.cors.reactive.CorsWebFilter;
 
 import java.util.Arrays;
 @EnableMethodSecurity(prePostEnabled = true)
@@ -84,4 +85,28 @@ CorsConfigurationSource corsConfigurationSource() {
     source.registerCorsConfiguration("/webjars/**", configuration);
         return source;
     }
+    @Bean
+public CorsWebFilter corsWebFilter() {
+    CorsConfiguration config = new CorsConfiguration();
+    config.setAllowCredentials(true);
+    config.setAllowedOrigins(Arrays.asList(
+        "https://angular-vps.systeo.tn",
+        "https://api.angular-vps.systeo.tn",
+        "https://esmm.systeo.tn"
+    ));
+    config.setAllowedHeaders(Arrays.asList(
+        "Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"
+    ));
+    config.setExposedHeaders(Arrays.asList(
+        "X-Get-Header", "Authorization", "Content-Disposition"
+    ));
+    config.setAllowedMethods(Arrays.asList(
+        "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"
+    ));
+    config.setMaxAge(3600L);
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", config);
+    return new CorsWebFilter(source);
+}
 }
