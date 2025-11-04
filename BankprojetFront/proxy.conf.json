@@ -1,6 +1,6 @@
 {
   "/projetcompain": {
-    "target": "https://m1.systeo.tn",
+    "target": "https://api.angular-vps.systeo.tn",
     "secure": true,
     "changeOrigin": true,
     "logLevel": "debug"
