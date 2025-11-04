@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import { saveAs } from 'file-saver';
 import { TypeDocument } from './TypeDocument';
-const API_BASE_URL = 'https://m1.systeo.tn/documents';
+const API_BASE_URL = 'https://api.angular-vps.systeo.tn/documents';
 @Injectable({
   providedIn: 'root'
 })
