@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.Customizer;
 import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.http.HttpMethod;
 
 import java.util.Arrays;
 @EnableMethodSecurity(prePostEnabled = true)
