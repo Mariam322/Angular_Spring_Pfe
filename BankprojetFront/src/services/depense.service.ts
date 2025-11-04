@@ -4,8 +4,8 @@ import { AuthService } from 'src/services/auth.service';
 import { Depense } from './Depense';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import { compain } from './compain';
-const DEPENSE_API_URL = 'https://m1.systeo.tn/depense';
-const COMPAIN_API_URL = 'https://m1.systeo.tn/projetcompain';
+const DEPENSE_API_URL = 'https://api.angular-vps.systeo.tn/depense';
+const COMPAIN_API_URL = 'https://api.angular-vps.systeo.tn/projetcompain';
 @Injectable({
   providedIn: 'root'
 })
