@@ -7,7 +7,7 @@ import { OAuthService } from 'angular-oauth2-oidc';
 import { AuthService } from './auth.service';
 import { TypeClientFournisseur } from './type-client-fournisseur';
 
-const API_BASE_URL = 'https://m1.systeo.tn/projetcompain';
+const API_BASE_URL = 'https://api.angular-vps.systeo.tn/projetcompain';
 
 
 @Injectable({
