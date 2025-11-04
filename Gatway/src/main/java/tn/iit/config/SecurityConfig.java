@@ -15,9 +15,7 @@ import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.http.HttpMethod;
 
 import java.util.Arrays;
-@EnableMethodSecurity(prePostEnabled = true)
-@Configuration
-@EnableWebFluxSecurity
+
 @EnableMethodSecurity(prePostEnabled = true)
 @Configuration
 @EnableWebFluxSecurity
