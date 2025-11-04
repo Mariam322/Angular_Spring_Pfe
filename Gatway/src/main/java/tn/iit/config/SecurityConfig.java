@@ -30,7 +30,6 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http) {
         return http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeExchange(exchanges -> exchanges
                 // Allow OPTIONS requests for all endpoints (important for CORS preflight)
@@ -72,31 +71,5 @@ public class SecurityConfig {
             .build();
     }
 
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-            "https://angular-vps.systeo.tn", 
-            "https://api.angular-vps.systeo.tn", 
-            "https://esmm.systeo.tn"
-        ));
-        configuration.setAllowedMethods(Arrays.asList(
-            "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"
-        ));
-        configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With",
-            "Access-Control-Request-Method", "Access-Control-Request-Headers"
-        ));
-        configuration.setExposedHeaders(Arrays.asList(
-            "X-Get-Header", "Authorization", "Content-Disposition"
-        ));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
-
-    // Remove the duplicate CorsWebFilter bean - it's not needed when using .cors()
 }
