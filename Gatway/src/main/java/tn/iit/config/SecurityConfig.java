@@ -1,17 +1,20 @@
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
+
 import java.util.Arrays;
 
-@EnableReactiveMethodSecurity
 @Configuration
+@EnableWebFluxSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     private final JwtAuthConverter jwtAuthConverter;
@@ -24,12 +27,12 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http) {
         return http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchanges -> exchanges
-                // Allow OPTIONS requests for all endpoints (CORS preflight)
+                // ✅ Autoriser toutes les requêtes OPTIONS (CORS preflight)
                 .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                
-                // Public endpoints
+
+                // ✅ Routes publiques
                 .pathMatchers(
                     "/",
                     "/swagger-ui.html",
@@ -37,30 +40,27 @@ public class SecurityConfig {
                     "/v3/api-docs/**",
                     "/swagger-resources/**",
                     "/webjars/**",
-                    "/swagger-ui/index.html",
-                    "/swagger-initializer.js",
-                    "/swagger-ui.css",
-                    "/swagger-ui-bundle.js",
-                    "/swagger-ui-standalone-preset.js",
                     "/favicon-*",
                     "/api-docs/**"
                 ).permitAll()
-                
-                // Authenticated endpoints
+
+                // ✅ Routes sécurisées
                 .pathMatchers("/projetcompain/**", "/facturation/**", "/banqueservice/**").authenticated()
                 .anyExchange().authenticated()
             )
+            .oauth2Login()
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt
                     .jwkSetUri("https://esmm.systeo.tn/realms/projectPFE/protocol/openid-connect/certs")
                     .jwtAuthenticationConverter(new ReactiveJwtAuthenticationConverterAdapter(jwtAuthConverter))
                 )
-                .authenticationEntryPoint((exchange, exception) -> {
-                    // Custom handling for 401 responses
-                    return Mono.fromRunnable(() -> {
-                        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                    });
-                })
+            )
+            .headers(headers -> headers
+                .contentSecurityPolicy(csp -> csp
+                    .policyDirectives("default-src 'self' https://api.angular-vps.systeo.tn; " +
+                        "script-src 'self' 'unsafe-inline' https://api.angular-vps.systeo.tn; " +
+                        "style-src 'self' 'unsafe-inline' https://api.angular-vps.systeo.tn")
+                )
             )
             .build();
     }
@@ -69,8 +69,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
-            "https://angular-vps.systeo.tn", 
-            "https://api.angular-vps.systeo.tn", 
+            "https://angular-vps.systeo.tn",
+            "https://api.angular-vps.systeo.tn",
             "https://esmm.systeo.tn"
         ));
         configuration.setAllowedMethods(Arrays.asList(
@@ -81,7 +81,7 @@ public class SecurityConfig {
             "Access-Control-Request-Method", "Access-Control-Request-Headers"
         ));
         configuration.setExposedHeaders(Arrays.asList(
-            "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials", "Authorization"
+            "X-Get-Header", "Authorization", "Content-Disposition"
         ));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
