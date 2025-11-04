@@ -50,7 +50,7 @@ export const routes: Routes = [
         
         {
           path:'compain',
-          component:CompainComponent
+          component:CompainComponent,canActivate: [AuthGuard]
         },
     
         {
@@ -59,7 +59,7 @@ export const routes: Routes = [
         },
         {
           path:'Facture',
-          component:InvoiceComponent,
+          component:InvoiceComponent,canActivate: [AuthGuard]
         },
       
         {
@@ -82,7 +82,7 @@ export const routes: Routes = [
 },
   {
       path:'listecompte',
-      component:CompteListComponent
+      component:CompteListComponent,canActivate: [AuthGuard]
 },
 {
       path:'forgot-password',
@@ -112,19 +112,19 @@ component:OperationBancaireComponent
   },
   {
     path:'user',
-    component:UtilisateurComponent
+    component:UtilisateurComponent,canActivate: [AuthGuard]
   },
      {
     path:'ListeCompany',
-    component:OmpaignListComponent
+    component:OmpaignListComponent,canActivate: [AuthGuard]
   },
        {
     path:'ListeFacture',
-    component:ListeFactureComponent
+    component:ListeFactureComponent,canActivate: [AuthGuard]
   },
      {
     path:'ListeDepense',
-    component:ListeDepenseComponent
+    component:ListeDepenseComponent,canActivate: [AuthGuard]
   },
    
       {
@@ -133,7 +133,7 @@ component:OperationBancaireComponent
   },
        {
     path:'ListeDocuments',
-    component:DocumentsComponent
+    component:DocumentsComponent,canActivate: [AuthGuard]
   },
   {
     path: 'auth/google/callback',
@@ -150,27 +150,27 @@ component:OperationBancaireComponent
   },
        {
     path:'affectation',
-    component:AffectationComponent
+    component:AffectationComponent,canActivate: [AuthGuard]
   },
    {
     path:'Reglement',
-    component:ReglementComponent
+    component:ReglementComponent,canActivate: [AuthGuard]
   },
    {
     path:'espaceuser',
-    component:EspaceUserComponent
+    component:EspaceUserComponent,canActivate: [AuthGuard]
   },
     {
     path:'ReglementAffectation',
-    component:AffectationReglementComponent,
+    component:AffectationReglementComponent,canActivate: [AuthGuard]
   },
      {
     path:'invoice',
-    component:InvoiceComponent,
+    component:InvoiceComponent,canActivate: [AuthGuard]
   },
     {
     path:'Profile',
-    component:ProfileComponent
+    component:ProfileComponent,canActivate: [AuthGuard]
   },
   
 
