@@ -6,8 +6,8 @@ import { AuthService } from './auth.service';
 import { Facture } from './Facture';
 import { compain } from './compain';
 
-const API_BASE_URL = 'https://m1.systeo.tn/facturation';
-const COMPAIN_API_URL = 'https://m1.systeo.tn/projetcompain';
+const API_BASE_URL = 'https://api.angular-vps.systeo.tn/facturation';
+const COMPAIN_API_URL = 'https://api.angular-vps.systeo.tn/projetcompain';
 @Injectable({
   providedIn: 'root'
 })
