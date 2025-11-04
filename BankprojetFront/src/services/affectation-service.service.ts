@@ -14,7 +14,7 @@ import { OperationBancaire } from './OperationBancaire';
 })
 export class AffectationServiceService {
 
-   private apiUrl = 'https://m1.systeo.tn/reglementaffectation';
+   private apiUrl = 'https://api.angular-vps.systeo.tn/reglementaffectation';
 
 
 
