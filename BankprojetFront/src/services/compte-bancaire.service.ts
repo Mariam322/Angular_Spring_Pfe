@@ -5,7 +5,7 @@ import { OAuthService } from 'angular-oauth2-oidc';
 import { AuthService } from './auth.service';
 import { catchError, Observable, of } from 'rxjs';
 
-const API_BASE_URL = 'https://m1.systeo.tn/banqueservice';
+const API_BASE_URL = 'https://api.angular-vps.systeo.tn/banqueservice';
 @Injectable({
   providedIn: 'root'
 })
