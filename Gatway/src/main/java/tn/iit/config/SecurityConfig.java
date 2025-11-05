@@ -27,7 +27,7 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http) {
         return http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+          
             .csrf(csrf -> csrf.disable())
             .authorizeExchange(exchanges -> exchanges
    .pathMatchers(
@@ -65,23 +65,5 @@ public class SecurityConfig {
             .build();
     }
 
-    @Bean
-CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(Arrays.asList("https://angular-vps.systeo.tn", "https://api.angular-vps.systeo.tn", "https://esmm.systeo.tn"));
-    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"));
-    configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
-    configuration.setExposedHeaders(Arrays.asList("X-Get-Header", "Authorization", "Content-Disposition"));
-    configuration.setAllowCredentials(true);
-    configuration.setMaxAge(3600L);
-
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration);
-   source.registerCorsConfiguration("/swagger-ui.html", configuration);
-    source.registerCorsConfiguration("/swagger-ui/**", configuration);
-    source.registerCorsConfiguration("/v3/api-docs", configuration);
-    source.registerCorsConfiguration("/swagger-resources/**", configuration);
-    source.registerCorsConfiguration("/webjars/**", configuration);
-        return source;
-    }
+ 
 }
