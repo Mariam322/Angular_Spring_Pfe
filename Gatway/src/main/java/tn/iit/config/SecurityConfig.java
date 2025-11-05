@@ -11,6 +11,8 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpMethod;
+
 
 import java.util.Arrays;
 @EnableMethodSecurity(prePostEnabled = true)
@@ -45,6 +47,7 @@ public class SecurityConfig {
                 "/favicon-*",
                 "/api-docs/**"
             ).permitAll()
+            .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .pathMatchers("/projetcompain/**", "/facturation/**", "/banqueservice/**").authenticated()
             .anyExchange().authenticated()
         )
