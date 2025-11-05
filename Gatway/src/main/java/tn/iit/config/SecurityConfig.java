@@ -70,6 +70,24 @@ public class SecurityConfig {
             )
             .build();
     }
+@Bean
+public CorsWebFilter corsWebFilter() {
+    CorsConfiguration config = new CorsConfiguration();
+    config.setAllowedOrigins(Arrays.asList(
+        "https://angular-vps.systeo.tn", 
+        "https://api.angular-vps.systeo.tn", 
+        "https://esmm.systeo.tn"
+    ));
+    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"));
+    config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
+    config.setExposedHeaders(Arrays.asList("Authorization", "Content-Disposition"));
+    config.setAllowCredentials(true);
+    config.setMaxAge(3600L);
 
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", config);
+
+    return new CorsWebFilter(source);
+}
 
 }
