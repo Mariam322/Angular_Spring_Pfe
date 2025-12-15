@@ -148,7 +148,6 @@ spec:
             ]
 
             for (svc in services) {
-              echo "🚀 Building ${svc.name} image"
               sh """
                 /kaniko/executor \
                   --context=dir://${WORKSPACE}/${svc.path} \
@@ -159,7 +158,6 @@ spec:
                   --single-snapshot \
                   --use-new-run
               """
-              echo "✅ ${svc.name} image pushed"
             }
           }
         }
@@ -170,20 +168,11 @@ spec:
       steps {
         container('kubectl') {
           withKubeConfig([credentialsId: 'kubernetes-vps-config']) {
-            sh """
-              kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
-
-              kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
-              kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
-              kubectl apply -f kubernetes/compain-service.yaml -n ${K8S_NAMESPACE}
-              kubectl apply -f kubernetes/bank-service.yaml -n ${K8S_NAMESPACE}
-              kubectl apply -f kubernetes/depense-service.yaml -n ${K8S_NAMESPACE}
-              kubectl apply -f kubernetes/facturation-service.yaml -n ${K8S_NAMESPACE}
-              kubectl apply -f kubernetes/reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
-              kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
-
-              kubectl get pods -n ${K8S_NAMESPACE}
-            """
+            sh '''
+              kubectl create namespace default --dry-run=client -o yaml | kubectl apply -f -
+              kubectl apply -f kubernetes/ -n default
+              kubectl get pods -n default
+            '''
           }
         }
       }
@@ -195,10 +184,9 @@ spec:
       echo '✅ Pipeline completed successfully'
     }
     failure {
-      echo '❌ Pipeline failed — check logs'
+      echo '❌ Pipeline failed'
     }
     always {
-      echo '🧹 Cleaning workspace'
       deleteDir()
     }
   }
