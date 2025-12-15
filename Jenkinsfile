@@ -9,22 +9,51 @@ metadata:
     app: kaniko-pipeline
 spec:
   serviceAccountName: default
+  restartPolicy: Never
+
   containers:
-  - name: maven
-    image: maven:3.9.9-eclipse-temurin-17
-    command: ["cat"]
-    tty: true
+  - name: jnlp
+    image: jenkins/inbound-agent:3341.v0766d82b_dec0-1
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
 
   - name: node
     image: node:20
     command: ["cat"]
     tty: true
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+
+  - name: maven
+    image: maven:3.9.9-eclipse-temurin-17
+    command: ["cat"]
+    tty: true
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
 
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
-    imagePullPolicy: Always
     command: ["sleep"]
-    args: ["9999999"]
+    args: ["999999"]
+    imagePullPolicy: Always
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
     volumeMounts:
       - name: docker-config
         mountPath: /kaniko/.docker
@@ -33,6 +62,12 @@ spec:
     image: lachlanevenson/k8s-kubectl:v1.25.4
     command: ["cat"]
     tty: true
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
 
   volumes:
   - name: docker-config
@@ -43,14 +78,13 @@ spec:
           items:
           - key: .dockerconfigjson
             path: config.json
-  restartPolicy: Never
 """
     }
   }
 
   environment {
     DOCKER_REGISTRY = 'docker.io/mariammseddi12'
-    K8S_NAMESPACE = 'default'
+    K8S_NAMESPACE   = 'default'
   }
 
   options {
@@ -72,18 +106,9 @@ spec:
         container('node') {
           dir('BankprojetFront') {
             sh '''
+              export NODE_OPTIONS=--max_old_space_size=1024
               npm config set legacy-peer-deps true
               npm install
-              npm install @popperjs/core --save
-              node -e "
-                const fs = require('fs');
-                const config = JSON.parse(fs.readFileSync('angular.json', 'utf8'));
-                const project = Object.keys(config.projects)[0];
-                if (config.projects[project]?.architect?.build?.configurations?.production?.budgets) {
-                  delete config.projects[project].architect.build.configurations.production.budgets;
-                }
-                fs.writeFileSync('angular.json', JSON.stringify(config, null, 2));
-              "
               npm run build
             '''
           }
@@ -118,13 +143,12 @@ spec:
               [name: 'Bank', path: 'BanqueService', image: 'bank-service'],
               [name: 'Depense', path: 'Depense', image: 'depense-service'],
               [name: 'Facturation', path: 'Facturation', image: 'facturation-service'],
-              [name: 'ReglementAffectation', path: 'ReglementAffectation', image: 'reglementaffectation-service'],
+              [name: 'Reglement', path: 'ReglementAffectation', image: 'reglementaffectation-service'],
               [name: 'Angular', path: 'BankprojetFront', image: 'angular-frontend']
             ]
 
             for (svc in services) {
-              echo "🚀 Building ${svc.name} image..."
-              sh "rm -rf /kaniko/.cache_${svc.name} || true"
+              echo "🚀 Building ${svc.name} image"
               sh """
                 /kaniko/executor \
                   --context=dir://${WORKSPACE}/${svc.path} \
@@ -132,43 +156,34 @@ spec:
                   --destination=${DOCKER_REGISTRY}/${svc.image}:latest \
                   --skip-tls-verify \
                   --snapshot-mode=redo \
-                  --cache=true
+                  --single-snapshot \
+                  --use-new-run
               """
-              echo "✅ ${svc.name} image built & pushed successfully."
+              echo "✅ ${svc.name} image pushed"
             }
           }
         }
       }
     }
 
-    stage('Deploy to VPS Kubernetes') {
+    stage('Deploy to Kubernetes VPS') {
       steps {
         container('kubectl') {
-          script {
-            echo "🚀 Starting deployment to local VPS Kubernetes cluster..."
+          withKubeConfig([credentialsId: 'kubernetes-vps-config']) {
+            sh """
+              kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
 
-            withKubeConfig([credentialsId: 'kubernetes-vps-config']) {
-              sh """
-                set -e
-                echo "🧭 Using namespace: ${K8S_NAMESPACE}"
-                kubectl create namespace ${K8S_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
+              kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
+              kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
+              kubectl apply -f kubernetes/compain-service.yaml -n ${K8S_NAMESPACE}
+              kubectl apply -f kubernetes/bank-service.yaml -n ${K8S_NAMESPACE}
+              kubectl apply -f kubernetes/depense-service.yaml -n ${K8S_NAMESPACE}
+              kubectl apply -f kubernetes/facturation-service.yaml -n ${K8S_NAMESPACE}
+              kubectl apply -f kubernetes/reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
+              kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
 
-                echo "⚙️ Applying manifests..."
-                kubectl apply -f kubernetes/eureka.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/gateway.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/compain-service.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/bank-service.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/depense-service.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/facturation-service.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/reglementaffectation-service.yaml -n ${K8S_NAMESPACE}
-                kubectl apply -f kubernetes/frontend.yaml -n ${K8S_NAMESPACE}
-
-                echo "⏳ Waiting for pods..."
-                sleep 60
-                kubectl get pods -n ${K8S_NAMESPACE} -o wide
-                echo "✅ Deployment complete."
-              """
-            }
+              kubectl get pods -n ${K8S_NAMESPACE}
+            """
           }
         }
       }
@@ -177,13 +192,14 @@ spec:
 
   post {
     success {
-      echo '✅ Pipeline completed successfully on VPS (Eureka + Gateway + Compain + Bank + Depense + Facturation + ReglementAffectation + Angular)'
+      echo '✅ Pipeline completed successfully'
     }
     failure {
-      echo '❌ Pipeline failed — check Jenkins logs for details.'
+      echo '❌ Pipeline failed — check logs'
     }
     always {
-      echo '🧹 Cleaning workspace...'
+      echo '🧹 Cleaning workspace'
+      deleteDir()
     }
   }
 }
